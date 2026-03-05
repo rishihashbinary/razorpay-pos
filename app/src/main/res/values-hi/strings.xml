@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">RouteHub PoS</string>
+    <string name="login">लॉगिन</string>
+    <string name="username">उपयोगकर्ता नाम</string>
+    <string name="password">पासवर्ड</string>
+    <string name="new_payment">नया भुगतान</string>
+    <string name="enter_amount">राशि दर्ज करें</string>
+    <string name="pay">भुगतान करें</string>
+    <string name="welcome">पीओएस सिस्टम में आपका स्वागत है</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="change_language">भाषा बदलें</string>
+</resources>
