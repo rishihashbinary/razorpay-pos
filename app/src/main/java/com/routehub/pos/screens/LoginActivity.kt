@@ -21,17 +21,13 @@ class LoginActivity : AppCompatActivity() {
 
         loginBtn.setOnClickListener {
 
-            val user = username.text.toString()
-            val pass = password.text.toString()
+            val user = "admin" //username.text.toString()
+            val pass = "123" //password.text.toString()
 
             if (user == "admin" && pass == "123") {
-
                 startActivity(Intent(this, HomeActivity::class.java))
-
             } else {
-
                 Toast.makeText(this, "Invalid credentials", Toast.LENGTH_SHORT).show()
-
             }
         }
     }

@@ -1,13 +1,13 @@
 package com.routehub.pos.screens
 
-
-import com.routehub.pos.R
-import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.routehub.pos.R
+import com.routehub.pos.fragments.CollectionFragment
+import com.routehub.pos.fragments.SettingsFragment
 import com.routehub.pos.helpers.LocaleHelper
-import com.routehub.pos.screens.settings.SettingsActivity
 
 class HomeActivity : AppCompatActivity() {
 
@@ -19,12 +19,29 @@ class HomeActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_home)
 
-        val settings = findViewById<Button>(R.id.btnSettings)
+        val nav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
-        settings.setOnClickListener {
+        loadFragment(CollectionFragment())
 
-            startActivity(Intent(this, SettingsActivity::class.java))
+        nav.setOnItemSelectedListener {
 
+            when (it.itemId) {
+
+                R.id.nav_collection -> loadFragment(CollectionFragment())
+
+                R.id.nav_settings -> loadFragment(SettingsFragment())
+
+            }
+
+            true
         }
+    }
+
+    private fun loadFragment(fragment: Fragment) {
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .commit()
     }
 }
