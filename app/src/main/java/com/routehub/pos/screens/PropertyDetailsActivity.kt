@@ -6,15 +6,26 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.routehub.pos.R
+import com.routehub.pos.clients.ApiClient
 import com.routehub.pos.data.SampleData
+import com.routehub.pos.models.responses.PropertyResponse
 import com.routehub.pos.payments.PaymentLauncher
+import com.routehub.pos.services.PropertiesService
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 
 class PropertyDetailsActivity : AppCompatActivity() {
 
+    val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         val qrCode = intent.getStringExtra("qrCode")
+
+        println("Fetching details for QR code: $qrCode")
 
         super.onCreate(savedInstanceState)
 
@@ -29,6 +40,30 @@ class PropertyDetailsActivity : AppCompatActivity() {
         val txtFee = findViewById<TextView>(R.id.txtFee)
         val btnPayment = findViewById<Button>(R.id.btnPayment)
 
+        apiService.getPropertyByQr(qrCode).enqueue(object : Callback<PropertyResponse> {
+
+            override fun onResponse(
+                call: Call<PropertyResponse>,
+                response: Response<PropertyResponse>
+            ) {
+
+                if (response.isSuccessful) {
+
+                    val property = response.body()?.data?.data[0]
+
+                    property?.let {
+                        txtName.text = it.name ?: it.address1
+//                        addressText.text = it.address
+//                        amountText.text = "₹${it.pendingAmount}"
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<PropertyResponse>, t: Throwable) {
+                t.printStackTrace()
+            }
+        })
+
 
 
         val property = SampleData.sampleProperty
@@ -37,17 +72,17 @@ class PropertyDetailsActivity : AppCompatActivity() {
         txtName.text = property.name
         txtPhone.text = property.mobileNo
 
-        txtType.text = property.propertyType
-        txtCategory.text = property.propertyCategory
-        txtUsage.text = property.usageType
+        txtType.text = property.propertyTypeId?.typeName
+        txtCategory.text = property.propertyCategoryId?.categoryName
+        txtUsage.text = property.propertyUsageTypeId?.typeName
 
-        txtFee.text = "₹ ${property.feeAmount}"
+        txtFee.text = "₹ 1000"
 
         btnPayment.setOnClickListener {
 
             PaymentLauncher.startPayment(
                 this,
-                property.feeAmount
+                1
             )
         }
     }
