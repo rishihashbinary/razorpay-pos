@@ -7,6 +7,8 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.routehub.pos.R
+import com.routehub.pos.analytics.MixpanelManager
+import org.json.JSONObject
 
 class LoginActivity : AppCompatActivity() {
 
@@ -25,6 +27,9 @@ class LoginActivity : AppCompatActivity() {
             val pass = "123" //password.text.toString()
 
             if (user == "admin" && pass == "123") {
+                val props = JSONObject()
+                props.put("user", user)
+                MixpanelManager.track("Login Success", props)
                 startActivity(Intent(this, HomeActivity::class.java))
             } else {
                 Toast.makeText(this, "Invalid credentials", Toast.LENGTH_SHORT).show()

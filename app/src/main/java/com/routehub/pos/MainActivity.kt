@@ -11,10 +11,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.routehub.pos.analytics.MixpanelManager
 import com.routehub.pos.ui.theme.RouteHubPoSTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        MixpanelManager.initialize(this,  "33f0937bb8ec54f0a6b39d404275ffd1")
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {

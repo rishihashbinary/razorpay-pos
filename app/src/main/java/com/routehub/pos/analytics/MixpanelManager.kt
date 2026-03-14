@@ -11,6 +11,13 @@ object MixpanelManager {
 
     fun initialize(context: Context, token: String) {
         mixpanel = MixpanelAPI.getInstance(context, token, true)
+
+        val props = JSONObject()
+        props.put("platform", "pos")
+        props.put("device_type", "razorpay_pos")
+//        props.put("app_version", BuildConfig.VERSION_NAME)
+
+        mixpanel?.registerSuperProperties(props)
     }
 
     fun track(event: String, props: JSONObject? = null) {
