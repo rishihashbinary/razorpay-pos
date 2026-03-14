@@ -1,0 +1,31 @@
+package com.routehub.pos.analytics
+
+import android.content.Context
+import android.util.Log
+import com.mixpanel.android.mpmetrics.MixpanelAPI
+import org.json.JSONObject
+
+object MixpanelManager {
+
+    private var mixpanel: MixpanelAPI? = null
+
+    fun initialize(context: Context, token: String) {
+        mixpanel = MixpanelAPI.getInstance(context, token, true)
+    }
+
+    fun track(event: String, props: JSONObject? = null) {
+        try {
+            mixpanel?.track(event, props)
+        } catch (e: Exception) {
+            Log.e("MixpanelManager", "Tracking failed: ${e.message}")
+        }
+    }
+
+    fun identify(userId: String) {
+        mixpanel?.identify(userId)
+    }
+
+    fun flush() {
+        mixpanel?.flush()
+    }
+}

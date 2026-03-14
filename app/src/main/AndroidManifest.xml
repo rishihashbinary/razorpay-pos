@@ -17,6 +17,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        tools:node="merge"
+        tools:replace="android:allowBackup"
         android:theme="@style/Theme.RouteHubPoS">
         <activity
             android:name=".screens.ScanQrActivity"
@@ -50,6 +52,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:name="com.ezetap.sdk.EzetapFileProvider"
+            android:authorities="${applicationId}.EzetapFileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true" >
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
     </application>
 
 </manifest>
