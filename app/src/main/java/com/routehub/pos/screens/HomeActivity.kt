@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.routehub.pos.R
 import com.routehub.pos.fragments.CollectionFragment
-import com.routehub.pos.fragments.SettingsFragment
+import com.routehub.pos.fragments.settings.SettingsFragment
 import com.routehub.pos.helpers.LocaleHelper
 import com.eze.api.EzeAPI
 import org.json.JSONObject

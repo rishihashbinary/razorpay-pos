@@ -30,6 +30,16 @@ object LocaleHelper {
         updateResources(context, langCode!!)
     }
 
+    fun getLanguage(context: Context): String {
+
+        val prefs: SharedPreferences =
+            context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+
+        val langCode = prefs.getString(KEY_LANGUAGE, "en")
+
+        return langCode!!
+    }
+
     private fun updateResources(context: Context, langCode: String) {
 
         val locale = Locale(langCode)

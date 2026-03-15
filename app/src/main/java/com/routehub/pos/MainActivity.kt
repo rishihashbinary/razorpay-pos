@@ -1,6 +1,7 @@
 package com.routehub.pos
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,6 +17,7 @@ import com.routehub.pos.ui.theme.RouteHubPoSTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("MainActivity", "initializing MixPanel")
         MixpanelManager.initialize(this,  "33f0937bb8ec54f0a6b39d404275ffd1")
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
