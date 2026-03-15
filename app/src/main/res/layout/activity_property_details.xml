@@ -113,20 +113,20 @@
 
             <!-- MAP CARD -->
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="220dp"
-                android:layout_marginTop="12dp"
-                material:cardCornerRadius="8dp"
-                material:cardElevation="0dp">
+<!--            <com.google.android.material.card.MaterialCardView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="220dp"-->
+<!--                android:layout_marginTop="12dp"-->
+<!--                material:cardCornerRadius="8dp"-->
+<!--                material:cardElevation="0dp">-->
 
-                <FrameLayout
-                    android:id="@+id/mapContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="#D9D9D9" />
+<!--                <FrameLayout-->
+<!--                    android:id="@+id/mapContainer"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="match_parent"-->
+<!--                    android:background="#D9D9D9" />-->
 
-            </com.google.android.material.card.MaterialCardView>
+<!--            </com.google.android.material.card.MaterialCardView>-->
 
 
             <!-- FEE CARD -->

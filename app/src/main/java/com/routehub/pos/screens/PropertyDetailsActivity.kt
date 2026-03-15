@@ -23,15 +23,16 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.routehub.pos.analytics.AnalyticsTracker
+import com.routehub.pos.analytics.MixpanelManager
 import org.json.JSONObject
 import org.json.JSONArray
 
 
-class PropertyDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
+class PropertyDetailsActivity : AppCompatActivity() {
 
     val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
     private val REQUEST_CODE_PAY = 10016
-    private var googleMap: GoogleMap? = null
+//    private var googleMap: GoogleMap? = null
 
 
     fun startPayment(amount: Double, orderId: String) {
@@ -60,6 +61,8 @@ class PropertyDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
             jsonRequest.put("amount", amount)
             jsonRequest.put("options", options)
 
+            MixpanelManager.track("Initiating Payment", jsonRequest)
+
             // Call Razorpay POS unified payment screen
             EzeAPI.pay(this, REQUEST_CODE_PAY, jsonRequest)
 
@@ -77,17 +80,21 @@ class PropertyDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         println("Fetching details for QR code: $qrCode")
 
+        val props = JSONObject()
+        props.put("qrCode", qrCode)
+        MixpanelManager.track("Loading Property Using QR", props)
+
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_property_details)
 
         // Map
-        val mapFragment = SupportMapFragment.newInstance()
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.mapContainer, mapFragment)
-            .commit()
-
-        mapFragment.getMapAsync(this)
+//        val mapFragment = SupportMapFragment.newInstance()
+//        supportFragmentManager.beginTransaction()
+//            .replace(R.id.mapContainer, mapFragment)
+//            .commit()
+//
+//        mapFragment.getMapAsync(this)
 
         val txtName = findViewById<TextView>(R.id.txtName)
         val txtQRCode = findViewById<TextView>(R.id.txtQRCode)
@@ -114,10 +121,14 @@ class PropertyDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 //                        addressText.text = it.address
 //                        amountText.text = "₹${it.pendingAmount}"
                     }
+
+
+                    MixpanelManager.track("Property Details", property)
                 }
             }
 
             override fun onFailure(call: Call<PropertyResponse>, t: Throwable) {
+                MixpanelManager.trackError("Property Loading Failed", t)
                 t.printStackTrace()
             }
         })
@@ -137,6 +148,7 @@ class PropertyDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
         txtFee.text = "₹ 1000"
 
         btnPayment.setOnClickListener {
+            MixpanelManager.track("Payment Button Clicked")
             startPayment(250.0, "ORDER123")
 
 //            PaymentLauncher.startPayment(
@@ -153,14 +165,27 @@ class PropertyDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
     ) {
 
         super.onActivityResult(requestCode, resultCode, data)
+        val paymentResult = JSONObject()
+
+        val transactionId = data?.getStringExtra("transactionId")
+        val status = data?.getStringExtra("status")
+
+        paymentResult.put("requestCode", requestCode)
+        paymentResult.put("resultCode", resultCode)
+        paymentResult.put("transactionId", transactionId)
+        paymentResult.put("status", status)
+
+        MixpanelManager.track("Payment Result", paymentResult)
 
         if (requestCode == PaymentLauncher.REQUEST_CODE_PAYMENT) {
 
             if (resultCode == RESULT_OK) {
 
-                val transactionId = data?.getStringExtra("transactionId")
-
-                val status = data?.getStringExtra("status")
+//                val transactionId = data?.getStringExtra("transactionId")
+//
+//                val status = data?.getStringExtra("status")
+                Toast.makeText(this, "Payment Successful", Toast.LENGTH_SHORT).show()
+                MixpanelManager.track("Payment Successful", paymentResult)
 
             }
 
@@ -168,22 +193,22 @@ class PropertyDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
-    override fun onMapReady(map: GoogleMap) {
-
-        googleMap = map
-
-        // Example coordinates (replace with property coordinates)
-        val propertyLocation = LatLng(19.0760, 72.8777)
-
-        googleMap?.addMarker(
-            MarkerOptions()
-                .position(propertyLocation)
-                .title("Property Location")
-        )
-
-        googleMap?.moveCamera(
-            CameraUpdateFactory.newLatLngZoom(propertyLocation, 17f)
-        )
-    }
+//    override fun onMapReady(map: GoogleMap) {
+//
+//        googleMap = map
+//
+//        // Example coordinates (replace with property coordinates)
+//        val propertyLocation = LatLng(19.0760, 72.8777)
+//
+//        googleMap?.addMarker(
+//            MarkerOptions()
+//                .position(propertyLocation)
+//                .title("Property Location")
+//        )
+//
+//        googleMap?.moveCamera(
+//            CameraUpdateFactory.newLatLngZoom(propertyLocation, 17f)
+//        )
+//    }
 
 }

@@ -2,6 +2,7 @@ package com.routehub.pos.screens
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -14,6 +15,9 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        Log.d("MainActivity", "initializing MixPanel")
+        MixpanelManager.initialize(this,  "33f0937bb8ec54f0a6b39d404275ffd1")
 
         setContentView(R.layout.activity_login)
 
