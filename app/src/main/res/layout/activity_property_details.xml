@@ -1,191 +1,186 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:material="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#E2E2E2"
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:background="#F5F5F5"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingHorizontal="5dp">
 
-        <ScrollView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
 
-            <LinearLayout
-                android:orientation="vertical"
-                android:padding="16dp"
+            <!-- QR CARD -->
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                material:cardCornerRadius="8dp"
+                material:cardElevation="0dp">
 
-                <!-- QR CARD -->
-
-                <com.google.android.material.card.MaterialCardView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    material:cardCornerRadius="12dp"
-                    material:cardElevation="4dp">
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                    <LinearLayout
-                        android:padding="16dp"
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="QR Code"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="QR Code"
-                            android:textStyle="bold"
-                            android:textSize="14sp"/>
+                    <TextView
+                        android:id="@+id/txtQRCode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="#1E88E5"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/txtQRCode"
-                            android:textSize="20sp"
-                            android:textStyle="bold"
-                            android:textColor="#1E88E5"
-                            android:layout_marginTop="4dp"/>
+                </LinearLayout>
 
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
+            </com.google.android.material.card.MaterialCardView>
 
 
-                <!-- PROPERTY CARD -->
+            <!-- PROPERTY CARD -->
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_marginTop="12dp"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                material:cardCornerRadius="8dp"
+                material:cardElevation="0dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    material:cardCornerRadius="12dp"
-                    material:cardElevation="4dp">
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                    <LinearLayout
-                        android:orientation="vertical"
-                        android:padding="16dp"
+                    <TextView
+                        android:id="@+id/txtName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/txtPhone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#666"
+                        android:textSize="16sp" />
+
+                    <View
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="10dp"
+                        android:background="#EEE" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/txtName"
-                            android:textSize="20sp"
-                            android:textStyle="bold"/>
+                    <TextView
+                        android:id="@+id/txtType"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/txtPhone"
-                            android:textSize="16sp"
-                            android:textColor="#666"/>
+                    <TextView
+                        android:id="@+id/txtCategory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp" />
 
-                        <View
-                            android:layout_height="1dp"
-                            android:layout_marginVertical="10dp"
-                            android:background="#EEE"
-                            android:layout_width="match_parent"/>
+                    <TextView
+                        android:id="@+id/txtUsage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/txtType"
-                            android:textSize="16sp"/>
+                </LinearLayout>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/txtCategory"
-                            android:textSize="16sp"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/txtUsage"
-                            android:textSize="16sp"/>
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
+            </com.google.android.material.card.MaterialCardView>
 
 
-                <!-- MAP CARD -->
+            <!-- MAP CARD -->
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_marginTop="12dp"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginTop="12dp"
+                material:cardCornerRadius="8dp"
+                material:cardElevation="0dp">
+
+                <FrameLayout
+                    android:id="@+id/mapContainer"
                     android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    material:cardCornerRadius="12dp"
-                    material:cardElevation="4dp">
+                    android:layout_height="match_parent"
+                    android:background="#D9D9D9" />
 
-                    <FrameLayout
-                        android:id="@+id/mapContainer"
-                        android:background="#D9D9D9"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
-
-                </com.google.android.material.card.MaterialCardView>
+            </com.google.android.material.card.MaterialCardView>
 
 
-                <!-- FEE CARD -->
+            <!-- FEE CARD -->
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_marginTop="12dp"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                material:cardCornerRadius="8dp"
+                material:cardElevation="0dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    material:cardCornerRadius="12dp"
-                    material:cardElevation="4dp">
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                    <LinearLayout
-                        android:orientation="vertical"
-                        android:padding="16dp"
-                        android:gravity="center"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Amount to Collect"
+                        android:textColor="#777"
+                        android:textSize="14sp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Amount to Collect"
-                            android:textSize="14sp"
-                            android:textColor="#777"/>
+                    <TextView
+                        android:id="@+id/txtFee"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="#2E7D32"
+                        android:textSize="36sp"
+                        android:textStyle="bold" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/txtFee"
-                            android:textSize="36sp"
-                            android:textStyle="bold"
-                            android:textColor="#2E7D32"
-                            android:layout_marginTop="4dp"/>
+                </LinearLayout>
 
-                    </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
 
-            </LinearLayout>
-
-        </ScrollView>
+    </ScrollView>
 
 
-        <!-- PAYMENT BUTTON -->
+    <!-- PAYMENT BUTTON -->
 
-        <Button
-            android:id="@+id/btnPayment"
-            android:text="ACCEPT PAYMENT"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:background="#2E7D32"
-            android:textColor="#FFFFFF"
-            android:layout_margin="12dp"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"/>
+    <Button
+        android:id="@+id/btnPayment"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="12dp"
+        android:background="#2E7D32"
+        android:text="ACCEPT PAYMENT"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
-    </LinearLayout>
-
-</ScrollView>
+</LinearLayout>

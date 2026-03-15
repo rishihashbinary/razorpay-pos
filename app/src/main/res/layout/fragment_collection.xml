@@ -1,15 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btnCollectFee"
-        android:text="Scan QR / Collect Fee"
-        android:textSize="20sp"
-        android:layout_width="250dp"
-        android:layout_height="70dp"/>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Title -->
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/fee_collection"
+        android:textSize="24sp"
+        android:layout_marginTop="40dp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/>
+
+
+    <!-- Button Container -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:layout_marginTop="40dp"
+        android:orientation="horizontal">
+
+        <!-- QR Scan -->
+
+        <LinearLayout
+            android:id="@+id/btnQrScan"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:background="@drawable/home_action_bg"
+            android:layout_marginEnd="10dp"
+            android:padding="12dp">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_qr_code"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/scan_qr"
+                android:textStyle="bold"
+                android:layout_marginTop="10dp"/>
+
+        </LinearLayout>
+
+
+        <!-- Mobile Number -->
+
+        <LinearLayout
+            android:id="@+id/btnMobileSearch"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="@drawable/home_action_bg"
+            android:layout_marginStart="10dp"
+            android:padding="12dp">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_phone"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mobile_number"
+                android:textStyle="bold"
+                android:layout_marginTop="10dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+    <!-- Add Property -->
+
+    <TextView
+        android:id="@+id/tvAddProperty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:textAlignment="center"
+        android:text="@string/property_not_found_add_manually"
+        android:textColor="@color/purple_700"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground"
+        android:textSize="15sp" />
 
 </LinearLayout>
