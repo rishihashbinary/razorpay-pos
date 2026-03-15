@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.routehub.pos.R
 import com.routehub.pos.clients.ApiClient
@@ -15,14 +16,23 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import com.eze.api.EzeAPI
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.routehub.pos.analytics.AnalyticsTracker
 import org.json.JSONObject
 import org.json.JSONArray
 
 
-class PropertyDetailsActivity : AppCompatActivity() {
+class PropertyDetailsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
     private val REQUEST_CODE_PAY = 10016
+    private var googleMap: GoogleMap? = null
+
 
     fun startPayment(amount: Double, orderId: String) {
 
@@ -54,6 +64,8 @@ class PropertyDetailsActivity : AppCompatActivity() {
             EzeAPI.pay(this, REQUEST_CODE_PAY, jsonRequest)
 
         } catch (e: Exception) {
+            Toast.makeText(this, "Error: " + e.message, Toast.LENGTH_LONG).show()
+            AnalyticsTracker.paymentFailed(orderId, e.message.toString())
             e.printStackTrace()
         }
     }
@@ -68,6 +80,14 @@ class PropertyDetailsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_property_details)
+
+        // Map
+        val mapFragment = SupportMapFragment.newInstance()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.mapContainer, mapFragment)
+            .commit()
+
+        mapFragment.getMapAsync(this)
 
         val txtName = findViewById<TextView>(R.id.txtName)
         val txtQRCode = findViewById<TextView>(R.id.txtQRCode)
@@ -146,6 +166,24 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
         }
 
+    }
+
+    override fun onMapReady(map: GoogleMap) {
+
+        googleMap = map
+
+        // Example coordinates (replace with property coordinates)
+        val propertyLocation = LatLng(19.0760, 72.8777)
+
+        googleMap?.addMarker(
+            MarkerOptions()
+                .position(propertyLocation)
+                .title("Property Location")
+        )
+
+        googleMap?.moveCamera(
+            CameraUpdateFactory.newLatLngZoom(propertyLocation, 17f)
+        )
     }
 
 }
