@@ -24,11 +24,11 @@ class HomeActivity : AppCompatActivity() {
 
             val jsonRequest = JSONObject()
 
-            jsonRequest.put("demoAppKey", "YOUR_DEMO_APP_KEY")
-            jsonRequest.put("prodAppKey", "YOUR_PROD_APP_KEY")
+            jsonRequest.put("demoAppKey", "8901c766-f261-4631-ad8b-6771de798728")
+            jsonRequest.put("prodAppKey", "8901c766-f261-4631-ad8b-6771de798728")
 
-            jsonRequest.put("merchantName", "YOUR_MERCHANT_NAME")
-            jsonRequest.put("userName", "POS_USER_01")
+            jsonRequest.put("merchantName", "ASR_SMARTCITY_PVT_LTD")
+            jsonRequest.put("userName", "5600430241")
 
             jsonRequest.put("currencyCode", "INR")
 
@@ -37,7 +37,7 @@ class HomeActivity : AppCompatActivity() {
 
             jsonRequest.put("captureSignature", "true")
             jsonRequest.put("prepareDevice", "false")
-            jsonRequest.put("captureReceipt", "false")
+            jsonRequest.put("captureReceipt", "true")
 
             EzeAPI.initialize(this, REQUEST_CODE_INITIALIZE, jsonRequest)
 

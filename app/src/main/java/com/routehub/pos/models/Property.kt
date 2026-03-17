@@ -13,9 +13,9 @@ data class Property(
     val propertyUsageTypeId: PropertyUsageType? = null,
     val address1: String? = null,
     val projectId: String?  = null,
-    val userId: User? = null,
+//    val userId: User? = null,
     val phoneVerificationToken: String? = null,
-    val mobileNumbers: List<String>? = null,
+//    val mobileNumbers: List<String>? = null,
     val renters: List<String>? = null,
     val additionalData: List<String>? = null,
     val requestedChanges: List<String>? = null,
@@ -25,5 +25,6 @@ data class Property(
     val longitude: Double? = null,
     val consumerId: String? = null,
     val name: String? = null,
+    val ownerName: String? = null,
     val mobileNo: String? = null,
 )

@@ -2,6 +2,7 @@ package com.routehub.pos.screens
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -24,6 +25,11 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.routehub.pos.analytics.AnalyticsTracker
 import com.routehub.pos.analytics.MixpanelManager
+import com.routehub.pos.models.CollectionPeriod
+import com.routehub.pos.models.DirectCollection
+import com.routehub.pos.models.Location
+import com.routehub.pos.models.responses.ApiResponse
+import com.routehub.pos.services.BillService
 import org.json.JSONObject
 import org.json.JSONArray
 
@@ -105,7 +111,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
         val txtFee = findViewById<TextView>(R.id.txtFee)
         val btnPayment = findViewById<Button>(R.id.btnPayment)
 
-        apiService.getPropertyByQr(qrCode).enqueue(object : Callback<PropertyResponse> {
+        apiService.getPropertyByQr(qrCode, "true").enqueue(object : Callback<PropertyResponse> {
 
             override fun onResponse(
                 call: Call<PropertyResponse>,
@@ -114,7 +120,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
                 if (response.isSuccessful) {
 
-                    val property = response.body()?.data?.data[0]
+                    val property = response.body()?.data
 
                     property?.let {
                         txtName.text = it.name ?: it.address1
@@ -122,8 +128,31 @@ class PropertyDetailsActivity : AppCompatActivity() {
 //                        amountText.text = "₹${it.pendingAmount}"
                     }
 
+//                    val property = SampleData.sampleProperty
+
+                    txtQRCode.text = property?.qrCode
+                    txtName.text = property?.name ?: property?.ownerName ?: property?.address1
+                    txtPhone.text = property?.mobileNo
+
+                    txtType.text = property?.propertyTypeId?.typeName
+                    txtCategory.text = property?.propertyCategoryId?.categoryName
+                    txtUsage.text = property?.propertyUsageTypeId?.typeName
+
+                    txtFee.text = "₹250"
+
 
                     MixpanelManager.track("Property Details", property)
+                } else {
+                    val errorMessage = response.errorBody()?.string();
+                    if(errorMessage!!.contains("Property not found for the provided QR code")) {
+                        Toast.makeText(this@PropertyDetailsActivity, "Property not found.", Toast.LENGTH_LONG).show();
+                        val intent = Intent(this@PropertyDetailsActivity, HomeActivity::class.java)
+                        startActivity(intent)
+                    }
+                    Log.d("PropertyDetailsActivity", "Error: ${response.errorBody()?.string()}")
+                    Log.d("PropertyDetailsActivity", "Response: ${response.body()}")
+                    MixpanelManager.track("Property Result Failure", response.body())
+
                 }
             }
 
@@ -135,21 +164,11 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
 
 
-        val property = SampleData.sampleProperty
 
-        txtQRCode.text = property.qrCode
-        txtName.text = property.name
-        txtPhone.text = property.mobileNo
-
-        txtType.text = property.propertyTypeId?.typeName
-        txtCategory.text = property.propertyCategoryId?.categoryName
-        txtUsage.text = property.propertyUsageTypeId?.typeName
-
-        txtFee.text = "₹ 1000"
 
         btnPayment.setOnClickListener {
             MixpanelManager.track("Payment Button Clicked")
-            startPayment(250.0, "ORDER123")
+            startPayment(250.0, "ASRO-${System.currentTimeMillis()}")
 
 //            PaymentLauncher.startPayment(
 //                this,
@@ -186,6 +205,43 @@ class PropertyDetailsActivity : AppCompatActivity() {
 //                val status = data?.getStringExtra("status")
                 Toast.makeText(this, "Payment Successful", Toast.LENGTH_SHORT).show()
                 MixpanelManager.track("Payment Successful", paymentResult)
+
+                val request = DirectCollection(
+                    propertyId = "64fe23...",
+                    amountPaid = 100.00F,
+                    billAmount = 100.00F,
+                    paymentType = "cash",
+                    collectorId = "64aa34...",
+                    collectionPeriod = CollectionPeriod(
+                        month = 3,
+                        year = 2026
+                    ),
+                    remark = "Manual collection",
+                    location = Location(
+                        latitude = 21.145,
+                        longitude = 79.088
+                    )
+                )
+                val billsService = ApiClient.retrofit.create(BillService::class.java)
+                billsService.createDirectCollection(request)
+                    .enqueue(object : Callback<ApiResponse> {
+
+                        override fun onResponse(
+                            call: Call<ApiResponse>,
+                            response: Response<ApiResponse>
+                        ) {
+                            if (response.isSuccessful) {
+                                val body = response.body()
+                                println("Success: ${body?.message}")
+                            } else {
+                                println("Error: ${response.errorBody()?.string()}")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                            t.printStackTrace()
+                        }
+                    })
 
             }
 
