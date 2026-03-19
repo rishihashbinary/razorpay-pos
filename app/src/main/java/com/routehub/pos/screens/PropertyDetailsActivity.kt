@@ -1,12 +1,17 @@
 package com.routehub.pos.screens
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.routehub.pos.R
 import com.routehub.pos.clients.ApiClient
 import com.routehub.pos.data.SampleData
@@ -19,14 +24,24 @@ import retrofit2.Response
 import com.eze.api.EzeAPI
 import com.routehub.pos.analytics.AnalyticsTracker
 import com.routehub.pos.analytics.MixpanelManager
+import com.routehub.pos.helpers.LocationHelper
 import com.routehub.pos.models.CollectionPeriod
 import com.routehub.pos.models.DirectCollection
+import com.routehub.pos.models.Property
 import com.routehub.pos.models.PropertyLocation
 import com.routehub.pos.models.responses.ApiResponse
 import com.routehub.pos.services.BillService
+import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.util.Calendar
 
 class PropertyDetailsActivity : AppCompatActivity() {
+
+    var property: Property? = null
+    var hasLocation: Boolean = false;
+    private lateinit var locationHelper: LocationHelper
+    lateinit var btnPayment: Button
+    lateinit var txtMessage: TextView
 
     val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
     private val REQUEST_CODE_PAY = 10016
@@ -62,7 +77,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
             MixpanelManager.track("Initiating Payment", jsonRequest)
 
             // Call Razorpay POS unified payment screen
-            EzeAPI.pay(this, REQUEST_CODE_PAY, jsonRequest)
+            EzeAPI.pay(this, PaymentLauncher.REQUEST_CODE_PAYMENT, jsonRequest)
 
         } catch (e: Exception) {
             Toast.makeText(this, "Error: " + e.message, Toast.LENGTH_LONG).show()
@@ -81,6 +96,38 @@ class PropertyDetailsActivity : AppCompatActivity() {
         val props = JSONObject()
         props.put("qrCode", qrCode)
         MixpanelManager.track("Loading Property Using QR", props)
+
+        locationHelper = LocationHelper(this)
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                100
+            )
+        }
+
+        // Step 1: Check permission
+        if (!locationHelper.hasLocationPermission()) {
+            locationHelper.requestPermission(this)
+        } else {
+
+            // Step 2: Get location
+            locationHelper.getCurrentLocation { location ->
+                if (location != null) {
+                    val lat = location.latitude
+                    val lng = location.longitude
+                    hasLocation = true;
+                    resetMessage()
+                    btnPayment.isEnabled = hasLocation
+                    println("Lat: $lat, Lng: $lng")
+                } else {
+                    println("Unable to fetch location")
+                }
+            }
+        }
 
         super.onCreate(savedInstanceState)
 
@@ -101,7 +148,15 @@ class PropertyDetailsActivity : AppCompatActivity() {
         val txtCategory = findViewById<TextView>(R.id.txtCategory)
         val txtUsage = findViewById<TextView>(R.id.txtUsage)
         val txtFee = findViewById<TextView>(R.id.txtFee)
-        val btnPayment = findViewById<Button>(R.id.btnPayment)
+        txtMessage = findViewById<TextView>(R.id.txtMessage)
+        btnPayment = findViewById<Button>(R.id.btnPayment)
+
+        if(!hasLocation) {
+            txtMessage.setText(getString(R.string.please_enable_location_to_continue))
+        }
+
+        btnPayment.isEnabled = hasLocation
+
 
         apiService.getPropertyByQr(qrCode, "true").enqueue(object : Callback<PropertyResponse> {
 
@@ -112,7 +167,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
                 if (response.isSuccessful) {
 
-                    val property = response.body()?.data
+                    property = response.body()?.data
 
                     property?.let {
                         txtName.text = it.name ?: it.address1
@@ -188,57 +243,117 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
         MixpanelManager.track("Payment Result", paymentResult)
 
+        Log.d("PropertyDetailsActivity", "Request Code: $requestCode == $PaymentLauncher.REQUEST_CODE_PAYMENT")
+        Log.d("PropertyDetailsActivity", "Result Code: $resultCode == $RESULT_OK")
+
         if (requestCode == PaymentLauncher.REQUEST_CODE_PAYMENT) {
 
             if (resultCode == RESULT_OK) {
 
+                Toast.makeText(this, "Payment Successful", Toast.LENGTH_LONG).show()
+
+                lifecycleScope.launch {
+                    var lat: Double = 0.0
+                    var lng: Double = 0.0
+
+                    val location = locationHelper.getCurrentLocationSuspend()
+                    if (location != null) {
+                        lat = location.latitude
+                        lng = location.longitude
+                    }
+
 //                val transactionId = data?.getStringExtra("transactionId")
 //
 //                val status = data?.getStringExtra("status")
-                Toast.makeText(this, "Payment Successful", Toast.LENGTH_SHORT).show()
-                MixpanelManager.track("Payment Successful", paymentResult)
 
-                val request = DirectCollection(
-                    propertyId = "64fe23...",
-                    amountPaid = 100.00F,
-                    billAmount = 100.00F,
-                    paymentType = "cash",
-                    collectorId = "64aa34...",
-                    collectionPeriod = CollectionPeriod(
-                        month = 3,
-                        year = 2026
-                    ),
-                    remark = "Manual collection",
-                    location = PropertyLocation(
-                        latitude = 21.145,
-                        longitude = 79.088
+                    MixpanelManager.track("Payment Successful", paymentResult)
+
+                    val calendar = Calendar.getInstance()
+                    val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-based
+                    val year = calendar.get(Calendar.YEAR)
+
+                    val request = DirectCollection(
+                        propertyId = property?._id.toString(),
+                        amountPaid = 250.00F,
+                        billAmount = 250.00F,
+                        paymentType = "cash",
+                        collectorId = "64aa34...",
+                        collectionPeriod = CollectionPeriod(
+                            month = month,
+                            year = year
+                        ),
+                        remark = "",
+                        location = PropertyLocation(
+                            latitude = lat,
+                            longitude = lng
+                        )
                     )
-                )
-                val billsService = ApiClient.retrofit.create(BillService::class.java)
-                billsService.createDirectCollection(request)
-                    .enqueue(object : Callback<ApiResponse> {
+                    val billsService = ApiClient.retrofit.create(BillService::class.java)
+                    billsService.createDirectCollection(request)
+                        .enqueue(object : Callback<ApiResponse> {
 
-                        override fun onResponse(
-                            call: Call<ApiResponse>,
-                            response: Response<ApiResponse>
-                        ) {
-                            if (response.isSuccessful) {
-                                val body = response.body()
-                                println("Success: ${body?.message}")
-                            } else {
-                                println("Error: ${response.errorBody()?.string()}")
+                            override fun onResponse(
+                                call: Call<ApiResponse>,
+                                response: Response<ApiResponse>
+                            ) {
+                                if (response.isSuccessful) {
+                                    val body = response.body()
+                                    println("Success: ${body?.message}")
+                                } else {
+                                    println("Error: ${response.errorBody()?.string()}")
+                                }
                             }
-                        }
 
-                        override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
-                            t.printStackTrace()
-                        }
-                    })
+                            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                                t.printStackTrace()
+                            }
+                        })
 
+                }
             }
 
         }
 
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == LocationHelper.LOCATION_PERMISSION_REQUEST_CODE &&
+            grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            // Permission granted → call location again
+            locationHelper.getCurrentLocation { location ->
+                if (location != null) {
+                    val lat = location.latitude
+                    val lng = location.longitude
+                    hasLocation = true;
+                    btnPayment.isEnabled = hasLocation
+                    resetMessage()
+                    Log.d("PropertyDetailsActivity","onRequestPermissionsResult::Lat: $lat, Lng: $lng")
+                } else {
+                    println("Unable to fetch location")
+                }
+            }
+        }
+    }
+
+    fun resetMessage() {
+        if (hasLocation) {
+            txtMessage.setText("")
+        } else {
+            txtMessage.setText(getString(R.string.please_enable_location_to_continue))
+        }
+    }
+
+    fun navigateToHome() {
+        val intent = Intent(this, HomeActivity::class.java)
+        startActivity(intent)
     }
 
 //    override fun onMapReady(map: GoogleMap) {

@@ -35,6 +35,9 @@ class LoginActivity : AppCompatActivity() {
         val password = findViewById<EditText>(R.id.password)
         val loginBtn = findViewById<Button>(R.id.loginBtn)
 
+        username.setText("asr.ucc")
+        password.setText("Asr@1234")
+
         loginBtn.setOnClickListener {
 
 //            val user = "admin" //username.text.toString()
