@@ -4,7 +4,7 @@ object SessionManager {
 
     private var token: String? = null
 
-    fun setToken(value: String){
+    fun setToken(value: String?){
         token = value
     }
 

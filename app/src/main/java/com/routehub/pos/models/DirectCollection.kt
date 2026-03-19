@@ -8,7 +8,7 @@ data class DirectCollection(
     val collectorId: String,
     val collectionPeriod: CollectionPeriod,
     val remark: String,
-    val location: Location
+    val location: PropertyLocation
 )
 
 data class CollectionPeriod(
@@ -16,7 +16,7 @@ data class CollectionPeriod(
     val year: Int
 )
 
-data class Location(
+data class PropertyLocation(
     val latitude: Double,
     val longitude: Double
 )

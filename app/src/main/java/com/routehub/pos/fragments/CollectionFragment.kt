@@ -31,10 +31,10 @@ class CollectionFragment : Fragment() {
 
         qrScan.setOnClickListener {
 
-            val intent = Intent(requireContext(), ScanQrActivity::class.java)
+//            val intent = Intent(requireContext(), ScanQrActivity::class.java)
 //
-//            val intent = Intent(requireContext(), PropertyDetailsActivity::class.java)
-//            intent.putExtra("qrCode", "ASR-182-942")
+            val intent = Intent(requireContext(), PropertyDetailsActivity::class.java)
+            intent.putExtra("qrCode", "ASR-001-198")
             startActivity(intent)
 
 

@@ -17,22 +17,14 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import com.eze.api.EzeAPI
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.routehub.pos.analytics.AnalyticsTracker
 import com.routehub.pos.analytics.MixpanelManager
 import com.routehub.pos.models.CollectionPeriod
 import com.routehub.pos.models.DirectCollection
-import com.routehub.pos.models.Location
+import com.routehub.pos.models.PropertyLocation
 import com.routehub.pos.models.responses.ApiResponse
 import com.routehub.pos.services.BillService
 import org.json.JSONObject
-import org.json.JSONArray
-
 
 class PropertyDetailsActivity : AppCompatActivity() {
 
@@ -217,7 +209,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
                         year = 2026
                     ),
                     remark = "Manual collection",
-                    location = Location(
+                    location = PropertyLocation(
                         latitude = 21.145,
                         longitude = 79.088
                     )
