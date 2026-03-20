@@ -12,27 +12,28 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.routehub.pos.R
-import com.routehub.pos.clients.ApiClient
-import com.routehub.pos.data.SampleData
-import com.routehub.pos.models.responses.PropertyResponse
-import com.routehub.pos.payments.PaymentLauncher
-import com.routehub.pos.services.PropertiesService
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import com.eze.api.EzeAPI
+import com.routehub.pos.R
 import com.routehub.pos.analytics.AnalyticsTracker
 import com.routehub.pos.analytics.MixpanelManager
+import com.routehub.pos.clients.ApiClient
+import com.routehub.pos.clients.SessionManager
 import com.routehub.pos.helpers.LocationHelper
+import com.routehub.pos.helpers.PlayHelper
 import com.routehub.pos.models.CollectionPeriod
 import com.routehub.pos.models.DirectCollection
 import com.routehub.pos.models.Property
 import com.routehub.pos.models.PropertyLocation
 import com.routehub.pos.models.responses.ApiResponse
+import com.routehub.pos.models.responses.PropertyResponse
+import com.routehub.pos.payments.PaymentLauncher
 import com.routehub.pos.services.BillService
+import com.routehub.pos.services.PropertiesService
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.Calendar
 
 class PropertyDetailsActivity : AppCompatActivity() {
@@ -41,14 +42,15 @@ class PropertyDetailsActivity : AppCompatActivity() {
     var hasLocation: Boolean = false;
     private lateinit var locationHelper: LocationHelper
     lateinit var btnPayment: Button
-    lateinit var txtMessage: TextView
+//    lateinit var txtMessage: TextView
 
     val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
     private val REQUEST_CODE_PAY = 10016
+    private val REQUEST_CODE_PRINT_RECEIPT = 10028
 //    private var googleMap: GoogleMap? = null
 
 
-    fun startPayment(amount: Double, orderId: String) {
+    fun startPayment(amount: Float?, orderId: String) {
 
         try {
 
@@ -89,6 +91,10 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
+        val playServiceExists = PlayHelper.isGooglePlayServicesAvailable(this)
+//        Toast.makeText(this, "Play Service Exists: $playServiceExists", Toast.LENGTH_LONG).show()
+
+
         val qrCode = intent.getStringExtra("qrCode")
 
         println("Fetching details for QR code: $qrCode")
@@ -111,19 +117,22 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
         // Step 1: Check permission
         if (!locationHelper.hasLocationPermission()) {
+            Toast.makeText(this, "No location permission found, requesting.", Toast.LENGTH_LONG).show();
             locationHelper.requestPermission(this)
         } else {
-
+//            Toast.makeText(this, "Fetching location...", Toast.LENGTH_SHORT).show();
             // Step 2: Get location
-            locationHelper.getCurrentLocation { location ->
+            locationHelper.getLocation { location ->
                 if (location != null) {
+//                    Toast.makeText(this, "Got Location!", Toast.LENGTH_LONG).show();
                     val lat = location.latitude
                     val lng = location.longitude
                     hasLocation = true;
-                    resetMessage()
-                    btnPayment.isEnabled = hasLocation
+//                    resetMessage()
+//                    btnPayment.isEnabled = hasLocation
                     println("Lat: $lat, Lng: $lng")
                 } else {
+                    Toast.makeText(this, "Cannot fetch location!", Toast.LENGTH_LONG).show();
                     println("Unable to fetch location")
                 }
             }
@@ -148,14 +157,14 @@ class PropertyDetailsActivity : AppCompatActivity() {
         val txtCategory = findViewById<TextView>(R.id.txtCategory)
         val txtUsage = findViewById<TextView>(R.id.txtUsage)
         val txtFee = findViewById<TextView>(R.id.txtFee)
-        txtMessage = findViewById<TextView>(R.id.txtMessage)
+//        txtMessage = findViewById<TextView>(R.id.txtMessage)
         btnPayment = findViewById<Button>(R.id.btnPayment)
 
-        if(!hasLocation) {
-            txtMessage.setText(getString(R.string.please_enable_location_to_continue))
-        }
+//        if(!hasLocation) {
+//            txtMessage.setText(getString(R.string.please_enable_location_to_continue))
+//        }
 
-        btnPayment.isEnabled = hasLocation
+//        btnPayment.isEnabled = hasLocation
 
 
         apiService.getPropertyByQr(qrCode, "true").enqueue(object : Callback<PropertyResponse> {
@@ -185,7 +194,13 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     txtCategory.text = property?.propertyCategoryId?.categoryName
                     txtUsage.text = property?.propertyUsageTypeId?.typeName
 
-                    txtFee.text = "₹250"
+                    txtFee.text = "₹"+property?.rate.toString()
+
+                    if(property?.rate === null) {
+                        btnPayment.isEnabled = false
+                        txtFee.text = "No Fee Data!"
+                    }
+
 
 
                     MixpanelManager.track("Property Details", property)
@@ -215,7 +230,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
         btnPayment.setOnClickListener {
             MixpanelManager.track("Payment Button Clicked")
-            startPayment(250.0, "ASRO-${System.currentTimeMillis()}")
+            startPayment(property?.rate, "ASRO-${System.currentTimeMillis()}")
 
 //            PaymentLauncher.startPayment(
 //                this,
@@ -249,6 +264,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
         if (requestCode == PaymentLauncher.REQUEST_CODE_PAYMENT) {
 
             if (resultCode == RESULT_OK) {
+                MixpanelManager.track("Payment Success", paymentResult)
 
                 Toast.makeText(this, "Payment Successful", Toast.LENGTH_LONG).show()
 
@@ -266,18 +282,16 @@ class PropertyDetailsActivity : AppCompatActivity() {
 //
 //                val status = data?.getStringExtra("status")
 
-                    MixpanelManager.track("Payment Successful", paymentResult)
-
                     val calendar = Calendar.getInstance()
                     val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-based
                     val year = calendar.get(Calendar.YEAR)
 
                     val request = DirectCollection(
                         propertyId = property?._id.toString(),
-                        amountPaid = 250.00F,
-                        billAmount = 250.00F,
+                        amountPaid = property?.rate,
+                        billAmount = property?.rate,
                         paymentType = "cash",
-                        collectorId = "64aa34...",
+                        collectorId = SessionManager.getUserId(),
                         collectionPeriod = CollectionPeriod(
                             month = month,
                             year = year
@@ -309,7 +323,13 @@ class PropertyDetailsActivity : AppCompatActivity() {
                             }
                         })
 
+
                 }
+                EzeAPI.printReceipt(this, REQUEST_CODE_PRINT_RECEIPT, transactionId);
+                // TODO: navigate to print screen here.
+                navigateToHome()
+            } else {
+                MixpanelManager.track("Payment Failed", paymentResult)
             }
 
         }
@@ -334,22 +354,23 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     val lng = location.longitude
                     hasLocation = true;
                     btnPayment.isEnabled = hasLocation
-                    resetMessage()
+//                    resetMessage()
                     Log.d("PropertyDetailsActivity","onRequestPermissionsResult::Lat: $lat, Lng: $lng")
                 } else {
                     println("Unable to fetch location")
+                    Toast.makeText(this, "Cannot fetch location!", Toast.LENGTH_LONG).show();
                 }
             }
         }
     }
 
-    fun resetMessage() {
-        if (hasLocation) {
-            txtMessage.setText("")
-        } else {
-            txtMessage.setText(getString(R.string.please_enable_location_to_continue))
-        }
-    }
+//    fun resetMessage() {
+//        if (hasLocation) {
+//            txtMessage.setText("")
+//        } else {
+//            txtMessage.setText(getString(R.string.please_enable_location_to_continue))
+//        }
+//    }
 
     fun navigateToHome() {
         val intent = Intent(this, HomeActivity::class.java)

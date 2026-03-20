@@ -15,7 +15,7 @@ interface BillService {
         @Query("qrCode") qrCode: String?
     ): Call<PropertyResponse>
 
-    @POST("transactions/direct-collection")
+    @POST("transaction/direct-collection")
     fun createDirectCollection(
         @Body request: DirectCollection
     ): Call<ApiResponse>

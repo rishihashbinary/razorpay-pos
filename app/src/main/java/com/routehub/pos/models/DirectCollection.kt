@@ -2,10 +2,10 @@ package com.routehub.pos.models
 
 data class DirectCollection(
     val propertyId: String,
-    val amountPaid: Float,
-    val billAmount: Float,
+    val amountPaid: Float?,
+    val billAmount: Float?,
     val paymentType: String,
-    val collectorId: String,
+    val collectorId: String?,
     val collectionPeriod: CollectionPeriod,
     val remark: String,
     val location: PropertyLocation

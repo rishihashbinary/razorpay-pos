@@ -1,13 +1,17 @@
 package com.routehub.pos.helpers
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Looper
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.*
+import com.routehub.pos.helpers.PlayHelper
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -109,4 +113,57 @@ class LocationHelper(private val context: Context) {
                 Looper.getMainLooper()
             )
         }
+
+    @SuppressLint("MissingPermission")
+    fun getLocationUsingLocationManager(onResult: (Location?) -> Unit) {
+
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        val providers = locationManager.getProviders(true)
+
+        var bestLocation: Location? = null
+
+        for (provider in providers) {
+            val location = locationManager.getLastKnownLocation(provider)
+            if (location != null) {
+                if (bestLocation == null || location.accuracy < bestLocation.accuracy) {
+                    bestLocation = location
+                }
+            }
+        }
+
+        if (bestLocation != null) {
+            onResult(bestLocation)
+            return
+        }
+
+        // If no last known → request update
+        val listener = object : LocationListener {
+            override fun onLocationChanged(location: Location) {
+                onResult(location)
+                locationManager.removeUpdates(this)
+            }
+        }
+
+        try {
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                0L,
+                0f,
+                listener
+            )
+        } catch (e: Exception) {
+            onResult(null)
+        }
+    }
+
+    fun getLocation(
+        onResult: (Location?) -> Unit
+    ) {
+        if (PlayHelper.isGooglePlayServicesAvailable(context)) {
+            getCurrentLocation(onResult)
+        } else {
+            getLocationUsingLocationManager(onResult)
+        }
+    }
 }

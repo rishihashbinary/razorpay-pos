@@ -2,6 +2,7 @@ package com.routehub.pos.screens
 
 import android.content.Intent
 import android.os.Bundle
+import android.se.omapi.Session
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
@@ -56,9 +57,12 @@ class LoginActivity : AppCompatActivity() {
                 ) {
                     if (response.isSuccessful) {
                         val token = response.body()?.data?.token
+                        val userId = response.body()?.data?._id
+                        val employeeId = response.body()?.data?.employeeId
                         Log.d("LoginActivity", "Token: $token")
                         ("Token: $token")
                         SessionManager.setToken(token);
+                        SessionManager.setUserId(userId)
                         MixpanelManager.track("Login Success", request)
                         startActivity(Intent(this@LoginActivity, HomeActivity::class.java))
                     }

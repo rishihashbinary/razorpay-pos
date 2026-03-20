@@ -27,4 +27,5 @@ data class Property(
     val name: String? = null,
     val ownerName: String? = null,
     val mobileNo: String? = null,
+    val rate: Float? = null,
 )

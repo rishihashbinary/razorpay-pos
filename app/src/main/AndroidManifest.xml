@@ -8,8 +8,8 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -19,18 +19,27 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:theme="@style/Theme.RouteHubPoS"
         tools:node="merge"
-        tools:replace="android:allowBackup"
-        android:theme="@style/Theme.RouteHubPoS">
+        tools:replace="android:allowBackup">
+        <activity
+            android:name=".screens.PropertySearchActivity"
+            android:exported="false" />
         <activity
             android:name=".screens.ScanQrActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:replace="screenOrientation" />
         <activity
             android:name=".screens.PropertyDetailsActivity"
-            android:exported="false" />
+            android:configChanges="orientation|screenSize"
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".screens.LoginActivity"
-            android:exported="true">
+            android:configChanges="orientation|screenSize"
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -39,30 +48,35 @@
         </activity>
         <activity
             android:name=".screens.HomeActivity"
-            android:exported="false" />
+            android:configChanges="orientation|screenSize"
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".screens.settings.SettingsActivity"
-            android:exported="false" />
+            android:configChanges="orientation|screenSize"
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.RouteHubPoS">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.RouteHubPoS"></activity>
 
-        </activity>
         <provider
             android:name="com.ezetap.sdk.EzetapFileProvider"
             android:authorities="${applicationId}.EzetapFileProvider"
             android:exported="false"
-            android:grantUriPermissions="true" >
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_GOOGLE_MAP_API_KEY"/>
+            android:value="YOUR_GOOGLE_MAP_API_KEY" />
     </application>
-
 
 </manifest>

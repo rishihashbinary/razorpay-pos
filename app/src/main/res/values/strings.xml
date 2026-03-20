@@ -26,4 +26,6 @@
     <string name="mobile_number">Mobile Number</string>
     <string name="property_not_found_add_manually">Property not found? Add manually</string>
     <string name="please_enable_location_to_continue">Please enable location to continue.</string>
+    <string name="enter_mobile_number">Enter Mobile Number</string>
+    <string name="search_property">Search Property</string>
 </resources>
