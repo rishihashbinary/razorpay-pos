@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.gson.Gson
 import com.routehub.pos.R
 import com.routehub.pos.clients.ApiClient
 import com.routehub.pos.models.responses.PropertyResponse
@@ -59,8 +60,12 @@ class PropertySearchActivity : AppCompatActivity() {
 
                 if (response.isSuccessful && response.body() != null) {
 
+                    val property = response.body()!!.data
+
+
                     val intent =
                         Intent(this@PropertySearchActivity, PropertyDetailsActivity::class.java)
+                    intent.putExtra("propertyDetails", Gson().toJson(property))
                     intent.putExtra("mobileNumber", mobileNumber)
                     startActivity(intent)
 

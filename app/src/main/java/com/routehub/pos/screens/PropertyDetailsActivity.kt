@@ -14,6 +14,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.eze.api.EzeAPI
+import com.google.gson.Gson
 import com.routehub.pos.R
 import com.routehub.pos.analytics.AnalyticsTracker
 import com.routehub.pos.analytics.MixpanelManager
@@ -28,6 +29,7 @@ import com.routehub.pos.models.PropertyLocation
 import com.routehub.pos.models.responses.ApiResponse
 import com.routehub.pos.models.responses.PropertyResponse
 import com.routehub.pos.payments.PaymentLauncher
+import com.routehub.pos.screens.payment.PaymentFailureBottomSheet
 import com.routehub.pos.services.BillService
 import com.routehub.pos.services.PropertiesService
 import kotlinx.coroutines.launch
@@ -99,12 +101,18 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
 
         val qrCode = intent.getStringExtra("qrCode")
+        val propertyDetails = intent.getStringExtra("propertyDetails")
 
         println("Fetching details for QR code: $qrCode")
+        println("Fetching details for JSON: $propertyDetails")
 
         val props = JSONObject()
         props.put("qrCode", qrCode)
-        MixpanelManager.track("Loading Property Using QR", props)
+        if(qrCode !== null) {
+            MixpanelManager.track("Loading Property Using QR", props)
+        } else {
+            MixpanelManager.track("Loading Property Using JSON", propertyDetails)
+        }
 
         locationHelper = LocationHelper(this)
 
@@ -169,63 +177,94 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
 //        btnPayment.isEnabled = hasLocation
 
+        if(qrCode !== null) {
+            apiService.getPropertyByQr(qrCode, "true").enqueue(object : Callback<PropertyResponse> {
 
-        apiService.getPropertyByQr(qrCode, "true").enqueue(object : Callback<PropertyResponse> {
+                override fun onResponse(
+                    call: Call<PropertyResponse>,
+                    response: Response<PropertyResponse>
+                ) {
 
-            override fun onResponse(
-                call: Call<PropertyResponse>,
-                response: Response<PropertyResponse>
-            ) {
+                    if (response.isSuccessful) {
 
-                if (response.isSuccessful) {
+                        property = response.body()?.data
 
-                    property = response.body()?.data
-
-                    property?.let {
-                        txtName.text = it.name ?: it.address1
+                        property?.let {
+                            txtName.text = it.name ?: it.address1
 //                        addressText.text = it.address
 //                        amountText.text = "₹${it.pendingAmount}"
-                    }
+                        }
 
 //                    val property = SampleData.sampleProperty
 
-                    txtQRCode.text = property?.qrCode
-                    txtName.text = property?.name ?: property?.ownerName ?: property?.address1
-                    txtPhone.text = property?.mobileNo
+                        txtQRCode.text = property?.qrCode
+                        txtName.text = property?.name ?: property?.ownerName ?: property?.address1
+                        txtPhone.text = property?.mobileNo
 
-                    txtType.text = property?.propertyTypeId?.typeName
-                    txtCategory.text = property?.propertyCategoryId?.categoryName
-                    txtUsage.text = property?.propertyUsageTypeId?.typeName
+                        txtType.text = property?.propertyTypeId?.typeName
+                        txtCategory.text = property?.propertyCategoryId?.categoryName
+                        txtUsage.text = property?.propertyUsageTypeId?.typeName
 
-                    txtFee.text = "₹"+property?.rate.toString()
+                        txtFee.text = "₹" + property?.rate.toString()
 
-                    if(property?.rate === null) {
-                        btnPayment.isEnabled = false
-                        txtFee.text = "No Fee Data!"
+                        if (property?.rate === null) {
+                            btnPayment.isEnabled = false
+                            txtFee.text = "No Fee Data!"
+                        }
+
+
+
+                        MixpanelManager.track("Property Details", property)
+                    } else {
+                        val errorMessage = response.errorBody()?.string();
+                        if (errorMessage!!.contains("Property not found for the provided QR code")) {
+                            Toast.makeText(
+                                this@PropertyDetailsActivity,
+                                "Property not found.",
+                                Toast.LENGTH_LONG
+                            ).show();
+                            val intent =
+                                Intent(this@PropertyDetailsActivity, HomeActivity::class.java)
+                            startActivity(intent)
+                        }
+                        Log.d("PropertyDetailsActivity", "Error: ${response.errorBody()?.string()}")
+                        Log.d("PropertyDetailsActivity", "Response: ${response.body()}")
+                        MixpanelManager.track("Property Result Failure", response.body())
+
                     }
-
-
-
-                    MixpanelManager.track("Property Details", property)
-                } else {
-                    val errorMessage = response.errorBody()?.string();
-                    if(errorMessage!!.contains("Property not found for the provided QR code")) {
-                        Toast.makeText(this@PropertyDetailsActivity, "Property not found.", Toast.LENGTH_LONG).show();
-                        val intent = Intent(this@PropertyDetailsActivity, HomeActivity::class.java)
-                        startActivity(intent)
-                    }
-                    Log.d("PropertyDetailsActivity", "Error: ${response.errorBody()?.string()}")
-                    Log.d("PropertyDetailsActivity", "Response: ${response.body()}")
-                    MixpanelManager.track("Property Result Failure", response.body())
-
                 }
+
+                override fun onFailure(call: Call<PropertyResponse>, t: Throwable) {
+                    MixpanelManager.trackError("Property Loading Failed", t)
+                    t.printStackTrace()
+                }
+            })
+        } else {
+            property = Gson().fromJson(propertyDetails, Property::class.java)
+
+            property?.let {
+                txtName.text = it.name ?: it.address1
+//                        addressText.text = it.address
+//                        amountText.text = "₹${it.pendingAmount}"
             }
 
-            override fun onFailure(call: Call<PropertyResponse>, t: Throwable) {
-                MixpanelManager.trackError("Property Loading Failed", t)
-                t.printStackTrace()
+//                    val property = SampleData.sampleProperty
+
+            txtQRCode.text = property?.qrCode
+            txtName.text = property?.name ?: property?.ownerName ?: property?.address1
+            txtPhone.text = property?.mobileNo
+
+            txtType.text = property?.propertyTypeId?.typeName
+            txtCategory.text = property?.propertyCategoryId?.categoryName
+            txtUsage.text = property?.propertyUsageTypeId?.typeName
+
+            txtFee.text = "₹" + property?.rate.toString()
+
+            if (property?.rate === null) {
+                btnPayment.isEnabled = false
+                txtFee.text = "No Fee Data!"
             }
-        })
+        }
 
 
 
@@ -239,6 +278,26 @@ class PropertyDetailsActivity : AppCompatActivity() {
 //                this,
 //                1
 //            )
+        }
+
+        val btnReject = findViewById<Button>(R.id.btnRejectPayment)
+
+        btnReject.setOnClickListener {
+            val bottomSheet = PaymentFailureBottomSheet { reason, remarks ->
+
+                MixpanelManager.track(
+                    "Payment Rejected", mapOf(
+                        "reason" to reason.name,
+                        "remarks" to remarks
+                    )
+                )
+
+                Toast.makeText(this, "Captured: ${reason.displayName}", Toast.LENGTH_SHORT).show()
+
+                // TODO: Call your API here (similar to DirectCollection)
+            }
+
+            bottomSheet.show(supportFragmentManager, "PaymentFailure")
         }
     }
 

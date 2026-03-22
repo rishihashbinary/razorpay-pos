@@ -8,4 +8,9 @@
     <style name="Value">
         <item name="android:textSize">18sp</item>
     </style>
+
+    <style name="Button.Danger" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/danger</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
 </resources>
