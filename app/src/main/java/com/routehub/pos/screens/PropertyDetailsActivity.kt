@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.text.toLowerCase
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -62,11 +63,13 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
             // Order reference
             references.put("reference1", orderId)
+            references.put("propertyId", property?._id)
+            references.put("propertyQr", property?.qrCode)
 
             // Customer info (optional)
-            customer.put("name", "Citizen")
-            customer.put("mobileNo", "9999999999")
-            customer.put("email", "citizen@example.com")
+            customer.put("name", property?.name ?: property?.ownerName ?: property?.address1)
+            customer.put("mobileNo", property?.mobileNo)
+//            customer.put("email", property?.email)
 
             options.put("references", references)
             options.put("customer", customer)
@@ -251,17 +254,46 @@ class PropertyDetailsActivity : AppCompatActivity() {
         val transactionId = data?.getStringExtra("transactionId")
         val status = data?.getStringExtra("status")
 
+//        val paymentMode = data?.getStringExtra("paymentMode")
+//            ?: data?.getStringExtra("payment_type")
+//            ?: data?.getStringExtra("mode")
+//            ?: data?.getStringExtra("txnType")
+//            ?: "UNKNOWN"
+
+
+
+        val response = data?.getStringExtra("response")
+        Log.d("PropertyDetailsActivity", "Response: $response")
+
+        val paymentMode = try {
+            val response = data?.getStringExtra("response")
+            if (response != null) {
+                val json = JSONObject(response)
+                json.getJSONObject("result")
+                    .getJSONObject("txn")
+                    .optString("paymentMode", "UNKNOWN")
+            } else {
+                "UNKNOWN"
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            "UNKNOWN"
+        }
+        Log.d("PropertyDetailsActivity", "Payment Mode: $paymentMode")
+
         paymentResult.put("requestCode", requestCode)
         paymentResult.put("resultCode", resultCode)
         paymentResult.put("transactionId", transactionId)
         paymentResult.put("status", status)
 
-        MixpanelManager.track("Payment Result", paymentResult)
+        MixpanelManager.track("Payment Result", JSONObject(response))
 
         Log.d("PropertyDetailsActivity", "Request Code: $requestCode == $PaymentLauncher.REQUEST_CODE_PAYMENT")
         Log.d("PropertyDetailsActivity", "Result Code: $resultCode == $RESULT_OK")
 
         if (requestCode == PaymentLauncher.REQUEST_CODE_PAYMENT) {
+
+            MixpanelManager.track("Payment Mode $paymentMode")
 
             if (resultCode == RESULT_OK) {
                 MixpanelManager.track("Payment Success", paymentResult)
@@ -290,7 +322,8 @@ class PropertyDetailsActivity : AppCompatActivity() {
                         propertyId = property?._id.toString(),
                         amountPaid = property?.rate,
                         billAmount = property?.rate,
-                        paymentType = "cash",
+                        paymentType = paymentMode.toLowerCase(),
+                        paymentStatus= "success",
                         collectorId = SessionManager.getUserId(),
                         collectionPeriod = CollectionPeriod(
                             month = month,

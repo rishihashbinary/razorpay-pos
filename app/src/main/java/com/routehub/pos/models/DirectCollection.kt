@@ -8,7 +8,8 @@ data class DirectCollection(
     val collectorId: String?,
     val collectionPeriod: CollectionPeriod,
     val remark: String,
-    val location: PropertyLocation
+    val location: PropertyLocation,
+    val paymentStatus: String = "pending"
 )
 
 data class CollectionPeriod(
