@@ -9,6 +9,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.eze.api.EzeAPI
 import com.routehub.pos.R
+import com.routehub.pos.helpers.ReceiptPrintHelper
+import com.routehub.pos.models.ReceiptData
 import com.routehub.pos.screens.PropertyDetailsActivity
 import com.routehub.pos.screens.PropertySearchActivity
 import com.routehub.pos.screens.ScanQrActivity
@@ -57,10 +59,22 @@ class CollectionFragment : Fragment() {
         }
 
         testPrint.setOnClickListener {
-            val receipt = JSONObject()
-            receipt.put("amount", "500")
-            receipt.put("txnId", "123456")
-            EzeAPI.printBitmap(requireContext(), 10028, receipt);
+
+            val receiptData = ReceiptData(
+                merchantName = "ASR Ltd.",
+                txnId = "12345T",
+                paymentMode = "Cash",
+                reference1 = "ORD001",
+                status = "Success",
+                amount = "100.00"
+            )
+
+            ReceiptPrintHelper.printReceipt(requireContext(), receiptData)
+
+//            val receipt = JSONObject()
+//            receipt.put("amount", "500")
+//            receipt.put("txnId", "123456")
+//            EzeAPI.printBitmap(requireContext(), 10028, receipt);
         }
 
         return view

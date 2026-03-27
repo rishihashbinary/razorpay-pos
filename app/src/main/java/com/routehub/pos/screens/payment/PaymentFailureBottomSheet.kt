@@ -6,6 +6,13 @@ import android.view.LayoutInflater
 import android.widget.*
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.routehub.pos.R
+import com.routehub.pos.clients.ApiClient
+import com.routehub.pos.models.Reason
+import com.routehub.pos.models.responses.ApiResponse
+import com.routehub.pos.services.PaymentService
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class PaymentFailureBottomSheet(
     private val onSubmit: (reason: PaymentFailureReason, remarks: String) -> Unit
@@ -14,6 +21,8 @@ class PaymentFailureBottomSheet(
     private lateinit var radioGroup: RadioGroup
     private lateinit var edtRemarks: EditText
     private lateinit var btnSubmit: Button
+
+    val paymentService = ApiClient.retrofit.create(PaymentService::class.java)
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val view = LayoutInflater.from(context)
@@ -47,11 +56,29 @@ class PaymentFailureBottomSheet(
     }
 
     private fun setupRadioButtons() {
-        PaymentFailureReason.values().forEach { reason ->
-            val radioButton = RadioButton(context)
-            radioButton.text = reason.displayName
-            radioButton.tag = reason.name
-            radioGroup.addView(radioButton)
-        }
+
+        paymentService.getDenialReasons().enqueue(object : Callback<ApiResponse> {
+            override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+                if (response.isSuccessful) {
+                    val reasons = response.body()?.data as List<Reason>
+                    reasons.forEach { reason ->
+                        val radioButton = RadioButton(context)
+                        radioButton.text = reason.reason
+                        radioButton.tag = reason.reason
+                        radioGroup.addView(radioButton)
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                t.printStackTrace()
+            }
+        });
+//        PaymentFailureReason.values().forEach { reason ->
+//            val radioButton = RadioButton(context)
+//            radioButton.text = reason.displayName
+//            radioButton.tag = reason.name
+//            radioGroup.addView(radioButton)
+//        }
     }
 }

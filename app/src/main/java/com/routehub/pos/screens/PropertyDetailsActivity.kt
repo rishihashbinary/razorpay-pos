@@ -26,11 +26,13 @@ import com.routehub.pos.models.CollectionPeriod
 import com.routehub.pos.models.DirectCollection
 import com.routehub.pos.models.Property
 import com.routehub.pos.models.PropertyLocation
+import com.routehub.pos.models.Reason
 import com.routehub.pos.models.responses.ApiResponse
 import com.routehub.pos.models.responses.PropertyResponse
 import com.routehub.pos.payments.PaymentLauncher
 import com.routehub.pos.screens.payment.PaymentFailureBottomSheet
 import com.routehub.pos.services.BillService
+import com.routehub.pos.services.PaymentService
 import com.routehub.pos.services.PropertiesService
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -48,9 +50,12 @@ class PropertyDetailsActivity : AppCompatActivity() {
 //    lateinit var txtMessage: TextView
 
     val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
+
     private val REQUEST_CODE_PAY = 10016
     private val REQUEST_CODE_PRINT_RECEIPT = 10028
 //    private var googleMap: GoogleMap? = null
+
+    var reasons: List<Reason>? = null;
 
 
     fun startPayment(amount: Float?, orderId: String) {
@@ -270,6 +275,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
 
 
+
         btnPayment.setOnClickListener {
             MixpanelManager.track("Payment Button Clicked")
             startPayment(property?.rate, "ASRO-${System.currentTimeMillis()}")
@@ -339,6 +345,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
             "UNKNOWN"
         }
         Log.d("PropertyDetailsActivity", "Payment Mode: $paymentMode")
+        Log.d("PropertyDetailsActivity", "Transaction Id: $transactionId")
 
         paymentResult.put("requestCode", requestCode)
         paymentResult.put("resultCode", resultCode)

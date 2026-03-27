@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="384dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@android:color/white">
+
+    <!-- Merchant Name -->
+    <TextView
+        android:id="@+id/txtMerchant"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Merchant Name"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="@android:color/black"
+        android:paddingBottom="8dp" />
+
+    <!-- Divider -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="------------------------------"
+        android:gravity="center"
+        android:textColor="@android:color/black" />
+
+    <!-- Status -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Status"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"  android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/StatusId"
+            android:layout_width="wrap_content"
+            android:text="SUCCESS"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+    <!-- Transaction ID -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="4dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Txn ID"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/TxnId"
+            android:layout_width="wrap_content"
+            android:text="1234567890"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+    <!-- Payment Mode -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="4dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Mode"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/PaymentMode"
+            android:layout_width="wrap_content"
+            android:text="CARD"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+    <!-- Reference -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="4dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Ref No"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/txtRefrenceNo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="REF12345"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="------------------------------"
+        android:gravity="center"
+        android:paddingTop="6dp"
+        android:textColor="@android:color/black" />
+
+    <!-- Amount -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="AMOUNT"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:paddingTop="8dp" />
+
+    <TextView
+        android:id="@+id/txtAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="₹ 0.00"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="@android:color/black"
+        android:paddingTop="4dp" />
+
+    <!-- Footer -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Thank you!"
+        android:gravity="center"
+        android:textColor="@android:color/black"
+        android:paddingTop="12dp" />
+
+</LinearLayout>
