@@ -9,7 +9,6 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.text.toLowerCase
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -32,7 +31,6 @@ import com.routehub.pos.models.responses.PropertyResponse
 import com.routehub.pos.payments.PaymentLauncher
 import com.routehub.pos.screens.payment.PaymentFailureBottomSheet
 import com.routehub.pos.services.BillService
-import com.routehub.pos.services.PaymentService
 import com.routehub.pos.services.PropertiesService
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -50,6 +48,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 //    lateinit var txtMessage: TextView
 
     val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
+    val billsService = ApiClient.retrofit.create(BillService::class.java)
 
     private val REQUEST_CODE_PAY = 10016
     private val REQUEST_CODE_PRINT_RECEIPT = 10028
@@ -132,27 +131,27 @@ class PropertyDetailsActivity : AppCompatActivity() {
         }
 
         // Step 1: Check permission
-        if (!locationHelper.hasLocationPermission()) {
-            Toast.makeText(this, "No location permission found, requesting.", Toast.LENGTH_LONG).show();
-            locationHelper.requestPermission(this)
-        } else {
-//            Toast.makeText(this, "Fetching location...", Toast.LENGTH_SHORT).show();
-            // Step 2: Get location
-            locationHelper.getLocation { location ->
-                if (location != null) {
-//                    Toast.makeText(this, "Got Location!", Toast.LENGTH_LONG).show();
-                    val lat = location.latitude
-                    val lng = location.longitude
-                    hasLocation = true;
-//                    resetMessage()
-//                    btnPayment.isEnabled = hasLocation
-                    println("Lat: $lat, Lng: $lng")
-                } else {
-                    Toast.makeText(this, "Cannot fetch location!", Toast.LENGTH_LONG).show();
-                    println("Unable to fetch location")
-                }
-            }
-        }
+//        if (!locationHelper.hasLocationPermission()) {
+//            Toast.makeText(this, "No location permission found, requesting.", Toast.LENGTH_LONG).show();
+//            locationHelper.requestPermission(this)
+//        } else {
+////            Toast.makeText(this, "Fetching location...", Toast.LENGTH_SHORT).show();
+//            // Step 2: Get location
+//            locationHelper.getLocation { location ->
+//                if (location != null) {
+////                    Toast.makeText(this, "Got Location!", Toast.LENGTH_LONG).show();
+//                    val lat = location.latitude
+//                    val lng = location.longitude
+//                    hasLocation = true;
+////                    resetMessage()
+////                    btnPayment.isEnabled = hasLocation
+//                    println("Lat: $lat, Lng: $lng")
+//                } else {
+//                    Toast.makeText(this, "Cannot fetch location!", Toast.LENGTH_LONG).show();
+//                    println("Unable to fetch location")
+//                }
+//            }
+//        }
 
         super.onCreate(savedInstanceState)
 
@@ -293,14 +292,62 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
                 MixpanelManager.track(
                     "Payment Rejected", mapOf(
-                        "reason" to reason.name,
+                        "reason" to reason,
                         "remarks" to remarks
                     )
                 )
 
-                Toast.makeText(this, "Captured: ${reason.displayName}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Captured: ${reason}", Toast.LENGTH_SHORT).show()
 
-                // TODO: Call your API here (similar to DirectCollection)
+                lifecycleScope.launch {
+                    var lat: Double = 0.0
+                    var lng: Double = 0.0
+
+                    val location = locationHelper.getCurrentLocationSuspend()
+                    if (location != null) {
+                        lat = location.latitude
+                        lng = location.longitude
+                    }
+
+                    val calendar = Calendar.getInstance()
+                    val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-based
+                    val year = calendar.get(Calendar.YEAR)
+
+                    val denialDetails = DirectCollection(
+                        propertyId = property?._id, amountPaid = 0F, billAmount = property?.rate,
+                        collectorId = SessionManager.getUserId(),
+                        collectionPeriod = CollectionPeriod(
+                            month = month,
+                            year = year
+                        ),
+                        location = PropertyLocation(
+                            latitude = lat,
+                            longitude = lng
+                        ),
+                        paymentStatus = "denied",
+                        denialReason = reason,
+                        remark = remarks
+                    )
+
+                    billsService.denyPayment(denialDetails).enqueue(object : Callback<ApiResponse<Any>> {
+
+                        override fun onResponse(
+                            call: Call<ApiResponse<Any>>,
+                            response: Response<ApiResponse<Any>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val body = response.body()
+                                println("Success: ${body?.message}")
+                            } else {
+                                println("Error: ${response.errorBody()?.string()}")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<ApiResponse<Any>>, t: Throwable) {
+                            t.printStackTrace()
+                        }
+                    })
+                }
             }
 
             bottomSheet.show(supportFragmentManager, "PaymentFailure")
@@ -389,7 +436,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
                         amountPaid = property?.rate,
                         billAmount = property?.rate,
                         paymentType = paymentMode.toLowerCase(),
-                        paymentStatus= "success",
+                        paymentStatus = "success",
                         collectorId = SessionManager.getUserId(),
                         collectionPeriod = CollectionPeriod(
                             month = month,
@@ -401,13 +448,13 @@ class PropertyDetailsActivity : AppCompatActivity() {
                             longitude = lng
                         )
                     )
-                    val billsService = ApiClient.retrofit.create(BillService::class.java)
+
                     billsService.createDirectCollection(request)
-                        .enqueue(object : Callback<ApiResponse> {
+                        .enqueue(object : Callback<ApiResponse<Any>> {
 
                             override fun onResponse(
-                                call: Call<ApiResponse>,
-                                response: Response<ApiResponse>
+                                call: Call<ApiResponse<Any>>,
+                                response: Response<ApiResponse<Any>>
                             ) {
                                 if (response.isSuccessful) {
                                     val body = response.body()
@@ -417,7 +464,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
                                 }
                             }
 
-                            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                            override fun onFailure(call: Call<ApiResponse<Any>>, t: Throwable) {
                                 t.printStackTrace()
                             }
                         })

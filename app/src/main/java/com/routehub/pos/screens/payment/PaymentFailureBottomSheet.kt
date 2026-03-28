@@ -15,7 +15,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class PaymentFailureBottomSheet(
-    private val onSubmit: (reason: PaymentFailureReason, remarks: String) -> Unit
+    private val onSubmit: (reason: String, remarks: String) -> Unit
 ) : BottomSheetDialogFragment() {
 
     private lateinit var radioGroup: RadioGroup
@@ -43,7 +43,7 @@ class PaymentFailureBottomSheet(
             }
 
             val selectedRadio = view.findViewById<RadioButton>(selectedId)
-            val reason = PaymentFailureReason.valueOf(selectedRadio.tag.toString())
+            val reason = selectedRadio.tag.toString()
             val remarks = edtRemarks.text.toString()
 
             onSubmit(reason, remarks)
@@ -57,8 +57,8 @@ class PaymentFailureBottomSheet(
 
     private fun setupRadioButtons() {
 
-        paymentService.getDenialReasons().enqueue(object : Callback<ApiResponse> {
-            override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+        paymentService.getDenialReasons().enqueue(object : Callback<ApiResponse<Reason>> {
+            override fun onResponse(call: Call<ApiResponse<Reason>>, response: Response<ApiResponse<Reason>>) {
                 if (response.isSuccessful) {
                     val reasons = response.body()?.data as List<Reason>
                     reasons.forEach { reason ->
@@ -70,7 +70,7 @@ class PaymentFailureBottomSheet(
                 }
             }
 
-            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+            override fun onFailure(call: Call<ApiResponse<Reason>>, t: Throwable) {
                 t.printStackTrace()
             }
         });

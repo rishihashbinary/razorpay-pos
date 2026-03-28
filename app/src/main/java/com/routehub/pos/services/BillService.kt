@@ -1,6 +1,7 @@
 package com.routehub.pos.services
 
 import com.routehub.pos.models.DirectCollection
+import com.routehub.pos.models.Payment
 import com.routehub.pos.models.responses.ApiResponse
 import com.routehub.pos.models.responses.PropertyResponse
 import retrofit2.Call
@@ -18,5 +19,8 @@ interface BillService {
     @POST("transaction/direct-collection")
     fun createDirectCollection(
         @Body request: DirectCollection
-    ): Call<ApiResponse>
+    ): Call<ApiResponse<Any>>
+
+    @POST("transaction/deny")
+    fun denyPayment(@Body request: DirectCollection): Call<ApiResponse<Any>>
 }
