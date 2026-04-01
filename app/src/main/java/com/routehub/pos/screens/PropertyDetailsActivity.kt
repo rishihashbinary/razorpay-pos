@@ -14,18 +14,26 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.eze.api.EzeAPI
 import com.google.gson.Gson
+import com.routehub.pos.PrintCallback
 import com.routehub.pos.R
 import com.routehub.pos.analytics.AnalyticsTracker
 import com.routehub.pos.analytics.MixpanelManager
 import com.routehub.pos.clients.ApiClient
 import com.routehub.pos.clients.SessionManager
+import com.routehub.pos.helpers.DateHelper
 import com.routehub.pos.helpers.LocationHelper
 import com.routehub.pos.helpers.PlayHelper
+import com.routehub.pos.helpers.ReceiptPrintHelper
 import com.routehub.pos.models.CollectionPeriod
 import com.routehub.pos.models.DirectCollection
 import com.routehub.pos.models.Property
 import com.routehub.pos.models.PropertyLocation
 import com.routehub.pos.models.Reason
+import com.routehub.pos.models.ReceiptData
+import com.routehub.pos.models.razorpay.Customer
+import com.routehub.pos.models.razorpay.Receipt
+import com.routehub.pos.models.razorpay.References
+import com.routehub.pos.models.razorpay.TransactionResponse
 import com.routehub.pos.models.responses.ApiResponse
 import com.routehub.pos.models.responses.PropertyResponse
 import com.routehub.pos.payments.PaymentLauncher
@@ -363,7 +371,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         val paymentResult = JSONObject()
 
-        val transactionId = data?.getStringExtra("transactionId")
+//        val transactionId = data?.getStringExtra("transactionId")
         val status = data?.getStringExtra("status")
 
 //        val paymentMode = data?.getStringExtra("paymentMode")
@@ -377,26 +385,61 @@ class PropertyDetailsActivity : AppCompatActivity() {
         val response = data?.getStringExtra("response")
         Log.d("PropertyDetailsActivity", "Response: $response")
 
-        val paymentMode = try {
+//        val paymentMode = try {
+//            val response = data?.getStringExtra("response")
+//            if (response != null) {
+//                val json = JSONObject(response)
+//                json.getJSONObject("result")
+//                    .getJSONObject("txn")
+//                    .optString("paymentMode", "UNKNOWN")
+//            } else {
+//                "UNKNOWN"
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            "UNKNOWN"
+//        }
+//
+//        val transactionId = try {
+//            val response = data?.getStringExtra("response")
+//            if (response != null) {
+//                val json = JSONObject(response)
+//                json.getJSONObject("result")
+//                    .getJSONObject("txn")
+//                    .optString("txnId", "UNKNOWN")
+//            } else {
+//                "UNKNOWN"
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            "UNKNOWN"
+//        }
+
+        val result = try {
             val response = data?.getStringExtra("response")
+
             if (response != null) {
-                val json = JSONObject(response)
-                json.getJSONObject("result")
-                    .getJSONObject("txn")
-                    .optString("paymentMode", "UNKNOWN")
+                val parsed = Gson().fromJson(response, TransactionResponse::class.java)
+                parsed.result
             } else {
-                "UNKNOWN"
+                null
             }
+
         } catch (e: Exception) {
             e.printStackTrace()
-            "UNKNOWN"
+            null
         }
-        Log.d("PropertyDetailsActivity", "Payment Mode: $paymentMode")
-        Log.d("PropertyDetailsActivity", "Transaction Id: $transactionId")
+        val txn = result?.txn
+        val receipt = result?.receipt
+        val customer = result?.customer
+        val references = result?.references
+
+        Log.d("PropertyDetailsActivity", "Payment Mode: $txn.paymentMode")
+        Log.d("PropertyDetailsActivity", "Transaction Id: $txn.txnId")
 
         paymentResult.put("requestCode", requestCode)
         paymentResult.put("resultCode", resultCode)
-        paymentResult.put("transactionId", transactionId)
+        paymentResult.put("transactionId", txn?.txnId)
         paymentResult.put("status", status)
 
         MixpanelManager.track("Payment Result", JSONObject(response))
@@ -406,7 +449,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
         if (requestCode == PaymentLauncher.REQUEST_CODE_PAYMENT) {
 
-            MixpanelManager.track("Payment Mode $paymentMode")
+//            MixpanelManager.track("Payment Mode $paymentMode")
 
             if (resultCode == RESULT_OK) {
                 MixpanelManager.track("Payment Success", paymentResult)
@@ -435,7 +478,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
                         propertyId = property?._id.toString(),
                         amountPaid = property?.rate,
                         billAmount = property?.rate,
-                        paymentType = paymentMode.toLowerCase(),
+                        paymentType = txn?.paymentMode?.toLowerCase(),
                         paymentStatus = "success",
                         collectorId = SessionManager.getUserId(),
                         collectionPeriod = CollectionPeriod(
@@ -471,9 +514,39 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
 
                 }
-                EzeAPI.printReceipt(this, REQUEST_CODE_PRINT_RECEIPT, transactionId);
+                val receiptDate = DateHelper.getReadableDate(receipt?.receiptDate)
+                Log.d(
+                    "PropertyDetailsActivity", "Receipt Date $receiptDate")
+//                EzeAPI.printReceipt(this, REQUEST_CODE_PRINT_RECEIPT, transactionId);
                 // TODO: navigate to print screen here.
-                navigateToHome()
+                val receiptData = ReceiptData(
+                    merchantName = "ASR Smart City Pvt. Ltd.",
+                    txnId = txn?.txnId,
+                    paymentMode = txn?.paymentMode,
+                    reference1 = references?.reference1,
+                    status = "Success",
+                    amount = property?.rate,
+                    usageType = property?.propertyUsageTypeId?.typeName,
+                    customerName = property?.name ?: property?.ownerName ?: property?.address1,
+                    customerPhone = property?.mobileNo,
+                    receiptDate = DateHelper.getReadableDate(receipt?.receiptDate)
+                )
+//                MixpanelManager.track("Initiating Print.", receiptData)
+                ReceiptPrintHelper.printReceipt(this, receiptData, object : PrintCallback {
+                    override fun onSuccess() {
+                        MixpanelManager.track("Print Success")
+                        navigateToHome()
+                    }
+
+                    override fun onError(error: String?) {
+                        val props = JSONObject()
+                        props.put("errorMessage", error ?: "Unknown Error")
+                        MixpanelManager.track("Print Failed", props)
+                    }
+
+                });
+//                MixpanelManager.track("Sent to Printer")
+//                navigateToHome()
             } else {
                 MixpanelManager.track("Payment Failed", paymentResult)
             }

@@ -66,10 +66,10 @@ class CollectionFragment : Fragment() {
                 paymentMode = "Cash",
                 reference1 = "ORD001",
                 status = "Success",
-                amount = "100.00"
+                amount = 100.00F
             )
 
-            ReceiptPrintHelper.printReceipt(requireContext(), receiptData)
+//            ReceiptPrintHelper.printReceipt(requireContext(), receiptData)
 
 //            val receipt = JSONObject()
 //            receipt.put("amount", "500")

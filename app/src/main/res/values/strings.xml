@@ -28,4 +28,11 @@
     <string name="please_enable_location_to_continue">Please enable location to continue.</string>
     <string name="enter_mobile_number">Enter Mobile Number</string>
     <string name="search_property">Search Property</string>
+    <string name="qr_code">QR Code</string>
+    <string name="amount_to_collect">Amount to Collect</string>
+    <string name="accept_payment">ACCEPT PAYMENT</string>
+    <string name="reject_failed_payment">REJECT / FAILED PAYMENT</string>
+    <string name="reason_for_rejection">Reason for rejection</string>
+    <string name="additional_remarks_optional">Additional remarks (optional)</string>
+    <string name="submit">Submit</string>
 </resources>

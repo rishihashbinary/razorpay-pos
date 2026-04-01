@@ -35,7 +35,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="QR Code"
+                        android:text="@string/qr_code"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
@@ -148,7 +148,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Amount to Collect"
+                        android:text="@string/amount_to_collect"
                         android:textColor="#777"
                         android:textSize="14sp" />
 
@@ -185,7 +185,7 @@
         android:layout_height="60dp"
         android:layout_margin="12dp"
         android:background="#2E7D32"
-        android:text="ACCEPT PAYMENT"
+        android:text="@string/accept_payment"
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         android:textStyle="bold" />
@@ -198,7 +198,7 @@
         android:layout_marginHorizontal="12dp"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="8dp"
-        android:text="REJECT / FAILED PAYMENT"
+        android:text="@string/reject_failed_payment"
         android:textSize="16sp"
         android:textStyle="bold" />
 

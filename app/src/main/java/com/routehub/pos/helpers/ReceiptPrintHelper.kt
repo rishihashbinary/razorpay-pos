@@ -8,7 +8,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
 import com.eze.api.EzeAPI
+import com.routehub.pos.PrintCallback
 import com.routehub.pos.R
+import com.routehub.pos.analytics.MixpanelManager
 import com.routehub.pos.models.ReceiptData
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -17,7 +19,7 @@ object ReceiptPrintHelper {
 
     private const val REQUEST_CODE_PRINT_BITMAP = 10029
 
-    fun printReceipt(context: Context, receiptData: ReceiptData) {
+    fun printReceipt(context: Context, receiptData: ReceiptData, callback: PrintCallback) {
         try {
             val bitmap = createBitmapFromLayout(context, receiptData)
             val encodedImage = getEncoded64ImageStringFromBitmap(bitmap)
@@ -31,9 +33,13 @@ object ReceiptPrintHelper {
             jsonRequest.put("image", jsonImageObj)
 
             EzeAPI.printBitmap(context, REQUEST_CODE_PRINT_BITMAP, jsonRequest)
+            Thread.sleep(2000)
+            callback.onSuccess();
 
         } catch (e: Exception) {
+            MixpanelManager.track("PrinterError", e)
             e.printStackTrace()
+            callback.onError(e.message);
         }
     }
 
@@ -50,7 +56,10 @@ object ReceiptPrintHelper {
         view.findViewById<TextView>(R.id.PaymentMode).text = data.paymentMode
         view.findViewById<TextView>(R.id.txtRefrenceNo).text = data.reference1
         view.findViewById<TextView>(R.id.StatusId).text = data.status
-        view.findViewById<TextView>(R.id.txtAmount).text = data.amount
+        view.findViewById<TextView>(R.id.txtAmount).text = "₹"+data.amount.toString()
+        view.findViewById<TextView>(R.id.Customer).text = data.customerName
+        view.findViewById<TextView>(R.id.CustPhone).text = data.customerPhone
+        view.findViewById<TextView>(R.id.ReceiptDate).text = data.receiptDate
 
         view.measure(
             View.MeasureSpec.makeMeasureSpec(384, View.MeasureSpec.EXACTLY),

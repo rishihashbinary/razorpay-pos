@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Merchant Name"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:gravity="center"
         android:textColor="@android:color/black"
@@ -26,6 +26,102 @@
         android:gravity="center"
         android:textColor="@android:color/black" />
 
+    <!-- Date -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Date"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"  android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/ReceiptDate"
+            android:layout_width="wrap_content"
+            android:text=""
+            android:textSize="12sp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+    <!-- Customer Name -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Customer "
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:textColor="@android:color/black"  android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/Customer"
+            android:layout_width="wrap_content"
+            android:text=""
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+    <!-- Usage Type -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Usage Type "
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:textColor="@android:color/black"  android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/CustomerUsage"
+            android:layout_width="wrap_content"
+            android:text=""
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+    <!-- Date -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Phone No."
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:textColor="@android:color/black"  android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/CustPhone"
+            android:layout_width="wrap_content"
+            android:text=""
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
     <!-- Status -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -37,6 +133,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:text="Status"
+            android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="@android:color/black"  android:layout_height="wrap_content"/>
 
@@ -44,6 +141,7 @@
             android:id="@+id/StatusId"
             android:layout_width="wrap_content"
             android:text="SUCCESS"
+            android:textSize="12sp"
             android:layout_height="wrap_content"
             android:textColor="@android:color/black" />
     </LinearLayout>
@@ -58,7 +156,8 @@
         <TextView
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:text="Txn ID"
+            android:text="Txn ID "
+            android:textSize="12sp"
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:textColor="@android:color/black" />
@@ -67,6 +166,7 @@
             android:id="@+id/TxnId"
             android:layout_width="wrap_content"
             android:text="1234567890"
+            android:textSize="12sp"
             android:layout_height="wrap_content"
             android:textColor="@android:color/black" />
     </LinearLayout>
@@ -83,6 +183,7 @@
             android:layout_weight="1"
             android:text="Mode"
             android:layout_height="wrap_content"
+            android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="@android:color/black" />
 
@@ -90,6 +191,7 @@
             android:id="@+id/PaymentMode"
             android:layout_width="wrap_content"
             android:text="CARD"
+            android:textSize="12sp"
             android:layout_height="wrap_content"
             android:textColor="@android:color/black" />
     </LinearLayout>
@@ -106,6 +208,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="Ref No"
+            android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="@android:color/black" />
 
@@ -114,6 +217,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="REF12345"
+            android:textSize="12sp"
             android:textColor="@android:color/black" />
     </LinearLayout>
 
@@ -131,6 +235,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="AMOUNT"
+        android:textSize="16sp"
         android:gravity="center"
         android:textStyle="bold"
         android:textColor="@android:color/black"
@@ -141,7 +246,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="₹ 0.00"
-        android:textSize="20sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:gravity="center"
         android:textColor="@android:color/black"
@@ -152,6 +257,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Thank you!"
+        android:textSize="12sp"
         android:gravity="center"
         android:textColor="@android:color/black"
         android:paddingTop="12dp" />
