@@ -17,7 +17,13 @@
         android:gravity="center"
         android:textColor="@android:color/black"
         android:paddingBottom="8dp" />
-
+    <TextView
+        android:id="@+id/TxnId"
+        android:layout_width="wrap_content"
+        android:text="1234567890"
+        android:textSize="12sp"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/black" />
     <!-- Divider -->
     <TextView
         android:layout_width="match_parent"
@@ -147,29 +153,29 @@
     </LinearLayout>
 
     <!-- Transaction ID -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="4dp">
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:paddingTop="4dp">-->
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:text="Txn ID "
-            android:textSize="12sp"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:textColor="@android:color/black" />
+<!--        <TextView-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="Txn ID "-->
+<!--            android:textSize="12sp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:textStyle="bold"-->
+<!--            android:textColor="@android:color/black" />-->
 
-        <TextView
-            android:id="@+id/TxnId"
-            android:layout_width="wrap_content"
-            android:text="1234567890"
-            android:textSize="12sp"
-            android:layout_height="wrap_content"
-            android:textColor="@android:color/black" />
-    </LinearLayout>
+<!--        <TextView-->
+<!--            android:id="@+id/TxnId"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:text="1234567890"-->
+<!--            android:textSize="12sp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:textColor="@android:color/black" />-->
+<!--    </LinearLayout>-->
 
     <!-- Payment Mode -->
     <LinearLayout

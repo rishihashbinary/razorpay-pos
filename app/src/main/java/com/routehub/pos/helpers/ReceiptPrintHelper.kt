@@ -33,7 +33,7 @@ object ReceiptPrintHelper {
             jsonRequest.put("image", jsonImageObj)
 
             EzeAPI.printBitmap(context, REQUEST_CODE_PRINT_BITMAP, jsonRequest)
-            Thread.sleep(2000)
+            Thread.sleep(3000)
             callback.onSuccess();
 
         } catch (e: Exception) {
@@ -60,6 +60,7 @@ object ReceiptPrintHelper {
         view.findViewById<TextView>(R.id.Customer).text = data.customerName
         view.findViewById<TextView>(R.id.CustPhone).text = data.customerPhone
         view.findViewById<TextView>(R.id.ReceiptDate).text = data.receiptDate
+        view.findViewById<TextView>(R.id.CustomerUsage).text = data.usageType
 
         view.measure(
             View.MeasureSpec.makeMeasureSpec(384, View.MeasureSpec.EXACTLY),
