@@ -14,6 +14,13 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/settingsRecycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="wrap_content"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtVersion"
+        android:layout_marginTop="30dp"
+        android:text="Version 1.0.1"
+        />
 
 </LinearLayout>
