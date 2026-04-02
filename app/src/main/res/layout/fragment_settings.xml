@@ -20,7 +20,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/txtVersion"
         android:layout_marginTop="30dp"
-        android:text="Version 1.0.1"
+        android:text="Version 1.0.0"
+        android:textAlignment="center"
         />
 
 </LinearLayout>

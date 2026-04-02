@@ -11,6 +11,7 @@ import com.eze.api.EzeAPI
 import com.routehub.pos.R
 import com.routehub.pos.helpers.ReceiptPrintHelper
 import com.routehub.pos.models.ReceiptData
+import com.routehub.pos.screens.NewPropertyActivity
 import com.routehub.pos.screens.PropertyDetailsActivity
 import com.routehub.pos.screens.PropertySearchActivity
 import com.routehub.pos.screens.ScanQrActivity
@@ -36,7 +37,7 @@ class CollectionFragment : Fragment() {
         val testPrint = view.findViewById<TextView>(R.id.tvTestPrint)
 
 //        mobileSearch.isEnabled = false
-        addProperty.isVisible = false
+//        addProperty.isVisible = false
 
 
         qrScan.setOnClickListener {
@@ -56,6 +57,11 @@ class CollectionFragment : Fragment() {
             startActivity(intent)
 
 
+        }
+
+        addProperty.setOnClickListener {
+            val intent = Intent(requireContext(), NewPropertyActivity::class.java)
+            startActivity(intent)
         }
 
         testPrint.setOnClickListener {

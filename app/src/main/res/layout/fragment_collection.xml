@@ -98,7 +98,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:textAlignment="center"
-        android:visibility="gone"
         android:text="@string/property_not_found_add_manually"
         android:textColor="@color/purple_700"
         android:clickable="true"
