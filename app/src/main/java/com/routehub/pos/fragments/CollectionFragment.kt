@@ -66,14 +66,14 @@ class CollectionFragment : Fragment() {
 
         testPrint.setOnClickListener {
 
-            val receiptData = ReceiptData(
-                merchantName = "ASR Ltd.",
-                txnId = "12345T",
-                paymentMode = "Cash",
-                reference1 = "ORD001",
-                status = "Success",
-                amount = 100.00F
-            )
+//            val receiptData = ReceiptData(
+//                merchantName = "ASR Ltd.",
+//                txnId = "12345T",
+//                paymentMode = "Cash",
+//                reference1 = "ORD001",
+//                status = "Success",
+//                amount = 100.00F
+//            )
 
 //            ReceiptPrintHelper.printReceipt(requireContext(), receiptData)
 

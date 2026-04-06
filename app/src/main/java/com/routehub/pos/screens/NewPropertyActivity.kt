@@ -1,5 +1,6 @@
 package com.routehub.pos.screens
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -10,9 +11,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
+import com.google.zxing.integration.android.IntentIntegrator
 import com.routehub.pos.R
 import com.routehub.pos.clients.ApiClient
 import com.routehub.pos.helpers.DropdownHelper
+import com.routehub.pos.helpers.QrHelper
 import com.routehub.pos.models.NewProperty
 import com.routehub.pos.models.PropertyCategory
 import com.routehub.pos.models.PropertyType
@@ -135,22 +138,6 @@ class NewPropertyActivity : AppCompatActivity() {
                     }
                 })
 
-
-
-//                val wardsRes = wardService.getWards()
-//                val typesRes = propertyService.getPropertyTypes()
-//                val catRes = propertyService.getCategories()
-//                val usageRes = propertyService.getUsageTypes()
-
-
-//                allWards = wardsRes.data
-//                allTypes = typesRes.data
-//                allCategories = catRes.data
-//                allUsageTypes = usageRes.data
-
-
-//                typeDrop.setItems(allTypes)
-
                 setupDependencies()
 
             } catch (e: Exception) {
@@ -214,8 +201,7 @@ class NewPropertyActivity : AppCompatActivity() {
     private fun setupActions() {
 
         findViewById<Button>(R.id.btnScanQr).setOnClickListener {
-            qrCode = "QR-${System.currentTimeMillis()}" // Replace with scanner
-            findViewById<TextView>(R.id.tvQr).text = qrCode
+            startScanner()
         }
 
         findViewById<Button>(R.id.btnSubmit).setOnClickListener {
@@ -302,5 +288,66 @@ class NewPropertyActivity : AppCompatActivity() {
 
     private fun showLoader(show: Boolean) {
         // Optional: ProgressBar visibility
+    }
+
+    private fun startScanner() {
+
+        val integrator = IntentIntegrator(this)
+
+        integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE)
+        integrator.setPrompt("Scan Property QR Code")
+        integrator.setBeepEnabled(true)
+        integrator.setOrientationLocked(false)
+
+        integrator.initiateScan()
+
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ) {
+
+        val result = IntentIntegrator.parseActivityResult(
+            requestCode,
+            resultCode,
+            data
+        )
+
+        if (result != null) {
+
+            if (result.contents != null) {
+
+                val qrValue = result.contents
+
+
+
+                val qrCode = QrHelper.extractQrCode(qrValue)
+
+                Log.d("NewPropertyActivity", "QR Code: $qrCode")
+
+                if(qrCode != null) {
+
+                    findViewById<TextView>(R.id.tvQr).text = qrCode
+
+                } else {
+                    toast("Invalid QR code.")
+                    Log.d("NewPropertyActivity", "Invalid QR code")
+                }
+
+//                finish()
+
+            } else {
+
+//                finish()
+
+            }
+
+        } else {
+
+            super.onActivityResult(requestCode, resultCode, data)
+
+        }
     }
 }

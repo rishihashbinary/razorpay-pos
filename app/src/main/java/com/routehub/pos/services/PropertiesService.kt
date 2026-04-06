@@ -21,15 +21,15 @@ interface PropertiesService {
         @Query("phone") phone: String?
     ): Call<PropertyResponse>
 
-    @GET("api/propertyType")
-    suspend fun getPropertyTypes(): ApiResponse<PropertyType>
+    @GET("propertyType")
+    fun getPropertyTypes(): Call<ApiResponse<PropertyType>>
 
 
-    @GET("api/propertyCategory")
-    suspend fun getCategories(): ApiResponse<PropertyCategory>
+    @GET("propertyCategory")
+    fun getCategories(): Call<ApiResponse<PropertyCategory>>
 
-    @GET("api/propertyUsageType")
-    suspend fun getUsageTypes(): ApiResponse<PropertyUsageType>
+    @GET("propertyUsageType")
+    fun getUsageTypes(): Call<ApiResponse<PropertyUsageType>>
 
 
 }
