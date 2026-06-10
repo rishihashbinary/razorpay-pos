@@ -1,20 +1,28 @@
 package com.routehub.pos.screens
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
+import androidx.core.content.ContextCompat
+import androidx.core.widget.ImageViewCompat
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import com.google.gson.Gson
 import com.google.zxing.integration.android.IntentIntegrator
 import com.routehub.pos.R
+import com.routehub.pos.analytics.MixpanelManager
 import com.routehub.pos.clients.ApiClient
 import com.routehub.pos.helpers.DropdownHelper
+import com.routehub.pos.helpers.LocationHelper
 import com.routehub.pos.helpers.QrHelper
 import com.routehub.pos.models.NewProperty
 import com.routehub.pos.models.PropertyCategory
@@ -22,11 +30,12 @@ import com.routehub.pos.models.PropertyType
 import com.routehub.pos.models.PropertyUsageType
 import com.routehub.pos.models.Ward
 import com.routehub.pos.models.Zone
-import com.routehub.pos.models.responses.ApiResponse
+import com.routehub.pos.models.responses.ApiListResponse
+import com.routehub.pos.models.responses.ApiObjectResponse
+import com.routehub.pos.persistence.MasterDataPrefs
 import com.routehub.pos.services.PropertiesService
 import com.routehub.pos.services.WardService
 import com.routehub.pos.services.ZoneService
-import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -51,15 +60,68 @@ class NewPropertyActivity : AppCompatActivity() {
     private var allUsageTypes: List<PropertyUsageType>? = listOf<PropertyUsageType>()
 
     private var qrCode: String = ""
+    private var latitude: Double = 0.0
+    private var longitude: Double = 0.0
+
+    private lateinit var locationHelper: LocationHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        locationHelper = LocationHelper(this)
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_property)
 
         setupDropdowns()
+
         setupActions()
 
         loadData()
+
+        loadLocation()
+
+
+    }
+
+    fun loadLocation() {
+        //         Step 1: Check permission
+        if (!locationHelper.hasLocationPermission()) {
+            Toast.makeText(this, "No location permission found, requesting.", Toast.LENGTH_LONG).show();
+            locationHelper.requestPermission(this)
+        } else {
+            Toast.makeText(this, "Fetching location...", Toast.LENGTH_SHORT).show();
+            // Step 2: Get location
+            locationHelper.getCurrentLocation { location ->
+                if (location != null) {
+
+                    latitude = location.latitude
+                    longitude = location.longitude
+                    Toast.makeText(this, "Got Location! [$latitude, $longitude]", Toast.LENGTH_LONG).show();
+
+                    if(latitude != 0.0) {
+                        findViewById<TextView>(R.id.tvLocation).text = "$latitude, $longitude"
+                        ImageViewCompat.setImageTintList(
+                            findViewById<ImageView>(R.id.ivLocation),
+                            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.green_500)))
+                    } else {
+                        ImageViewCompat.setImageTintList(
+                            findViewById<ImageView>(R.id.ivLocation),
+                            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.red_500)))
+                    }
+
+                } else {
+                    Toast.makeText(this, "Cannot fetch location!", Toast.LENGTH_LONG).show();
+                    println("Unable to fetch location")
+                    ImageViewCompat.setImageTintList(
+                        findViewById<ImageView>(R.id.ivLocation),
+                        ColorStateList.valueOf(ContextCompat.getColor(this, R.color.red_500)))
+                }
+            }
+        }
+    }
+
+    fun setDropdownHint(viewId: Int, hint: String) {
+        val layout = findViewById<TextInputLayout>(viewId)
+        layout.hint = hint
     }
 
     // ---------------------------
@@ -69,18 +131,23 @@ class NewPropertyActivity : AppCompatActivity() {
         val zoneView = findViewById<View>(R.id.dropZone)
         val zoneAuto = zoneView.findViewById<AutoCompleteTextView>(R.id.autoComplete)
         zoneDrop = DropdownHelper<Zone>(zoneAuto) { it.name }
+        setDropdownHint(R.id.dropZone, "Select Zone")
+
 
         val wardView = findViewById<View>(R.id.dropWard)
         val wardAuto = wardView.findViewById<AutoCompleteTextView>(R.id.autoComplete)
         wardDrop = DropdownHelper(wardAuto) { it.number }
+        setDropdownHint(R.id.dropWard, "Select Ward")
 
         val  propertyTypeView = findViewById<View>(R.id.dropPropertyType)
         val propertyTypeAuto = propertyTypeView.findViewById<AutoCompleteTextView>(R.id.autoComplete)
         typeDrop = DropdownHelper(propertyTypeAuto) { it.typeName }
+        setDropdownHint(R.id.dropPropertyType, "Select Property Type")
 
         val categoryView = findViewById<View>(R.id.dropCategory)
         val categoryAuto = categoryView.findViewById<AutoCompleteTextView>(R.id.autoComplete)
         categoryDrop = DropdownHelper(categoryAuto) { it.categoryName }
+        setDropdownHint(R.id.dropCategory, "Select Property Category")
 
         val usageView = findViewById<View>(R.id.dropUsageType)
         val usageAuto = usageView.findViewById<AutoCompleteTextView>(R.id.autoComplete)
@@ -92,61 +159,21 @@ class NewPropertyActivity : AppCompatActivity() {
     // ---------------------------
     private fun loadData() {
 
-        lifecycleScope.launch {
-            try {
-                showLoader(true)
+        allZones = MasterDataPrefs.getZones(this)
+        allWards = MasterDataPrefs.getWards(this)
+        allTypes = MasterDataPrefs.getTypes(this)
+        allCategories = MasterDataPrefs.getCategories(this)
+        allUsageTypes = MasterDataPrefs.getUsage(this)
 
-                zoneService.getZones().enqueue(object : Callback<ApiResponse<Zone>> {
-
-                    override fun onResponse(
-                        call: Call<ApiResponse<Zone>>,
-                        response: Response<ApiResponse<Zone>>
-                    ) {
-                        if (response.isSuccessful) {
-                            val body = response.body()
-                            allZones = body?.data!!
-                            zoneDrop.setItems(allZones)
-//                            println("Success: ${body?.message}")
-                        } else {
-                            println("Error: ${response.errorBody()?.string()}")
-                        }
-                    }
-
-                    override fun onFailure(call: Call<ApiResponse<Zone>>, t: Throwable) {
-                        t.printStackTrace()
-                    }
-                })
-
-                wardService.getWards().enqueue(object : Callback<ApiResponse<Ward>> {
-
-                    override fun onResponse(
-                        call: Call<ApiResponse<Ward>>,
-                        response: Response<ApiResponse<Ward>>
-                    ) {
-                        if (response.isSuccessful) {
-                            val body = response.body()
-                            allWards = body?.data!!
-                            wardDrop.setItems(allWards)
-//                            println("Success: ${body?.message}")
-                        } else {
-                            println("Error: ${response.errorBody()?.string()}")
-                        }
-                    }
-
-                    override fun onFailure(call: Call<ApiResponse<Ward>>, t: Throwable) {
-                        t.printStackTrace()
-                    }
-                })
-
-                setupDependencies()
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                toast("Failed to load data ❌")
-            } finally {
-                showLoader(false)
-            }
+        if (allZones.isEmpty()) {
+            toast("App data not loaded. Please login again.")
+            return
         }
+
+        zoneDrop.setItems(allZones)
+        typeDrop.setItems(allTypes ?: emptyList())
+
+        setupDependencies()
     }
 
     // ---------------------------
@@ -167,32 +194,34 @@ class NewPropertyActivity : AppCompatActivity() {
         }
 
         // Type → Category
-//        findViewById<View>(R.id.dropPropertyType)
-//            .findViewById<AutoCompleteTextView>(R.id.autoComplete)
-//            .setOnItemClickListener { _, _, pos, _ ->
-//
-//                val selectedType = allTypes?.get(pos)
-//                val filtered = allCategories?.filter { it.propertyTypeId == selectedType?._id }
-//
-//                categoryDrop.setItems(filtered)
-//                categoryDrop.clear()
-//                usageDrop.clear()
-//            }
-//
-//        // Category → Usage
-//        findViewById<View>(R.id.dropCategory)
-//            .findViewById<AutoCompleteTextView>(R.id.autoComplete)
-//            .setOnItemClickListener { _, _, pos, _ ->
-//
+        typeDrop.setOnItemSelected { selectedType, pos ->
+
+                val selectedType = allTypes?.get(pos)
+                val filtered = allCategories?.filter { it.propertyTypeId == selectedType?._id }
+
+                categoryDrop.setItems(filtered ?: emptyList())
+                categoryDrop.clear()
+                usageDrop.clear()
+            }
+
+        // Category → Usage
+        categoryDrop
+            .setOnItemSelected { selectedCat, pos ->
+
 //                val selectedCat = categoryDrop.selectedItem ?: return@setOnItemClickListener
-//
-//                val filtered = allUsageTypes?.filter {
-//                    it.propertyCategoryId == selectedCat._id
-//                }
-//
-//                usageDrop.setItems(filtered)
-//                usageDrop.clear()
-//            }
+
+                Log.d("NewPropertyActivity", "Selected Category: ${selectedCat.categoryName}")
+
+                Log.d("NewPropertyActivity", "Usage Sample: ${allUsageTypes?.get(0)}")
+                val filtered = allUsageTypes?.filter {
+                    it.propertyCategoryId == selectedCat._id
+                }
+
+                Log.d("NewPropertyActivity", "Filtered Usage: ${filtered?.size}")
+
+                usageDrop.setItems(filtered ?: emptyList())
+                usageDrop.clear()
+            }
     }
 
     // ---------------------------
@@ -200,7 +229,7 @@ class NewPropertyActivity : AppCompatActivity() {
     // ---------------------------
     private fun setupActions() {
 
-        findViewById<Button>(R.id.btnScanQr).setOnClickListener {
+        findViewById<MaterialCardView>(R.id.cardQr).setOnClickListener {
             startScanner()
         }
 
@@ -220,7 +249,7 @@ class NewPropertyActivity : AppCompatActivity() {
 
         if (name.length < 3) return toast("Invalid Name")
 
-        if (!mobile.matches(Regex("^(?:\\+91|91)?[6-9]\\d{9}$")))
+        if (!mobile.matches(Regex("^[6-9]\\d{9}$")))
             return toast("Invalid Mobile")
 
         if (address.isBlank()) return toast("Address required")
@@ -235,8 +264,8 @@ class NewPropertyActivity : AppCompatActivity() {
 
         val request = NewProperty(
             address1 = address,
-            lat = 0.0,
-            lon = 0.0,
+            lat = latitude,
+            lon = longitude,
             mobileNo = mobile,
             name = name,
             propertyCategoryId = category._id,
@@ -247,21 +276,53 @@ class NewPropertyActivity : AppCompatActivity() {
             zoneId = zone._id,
         )
 
-        lifecycleScope.launch {
+        MixpanelManager.track("New Property", request)
+
             try {
                 showLoader(true)
 
-//                api.createProperty(request)
+                propertyService.createProperty(request).enqueue(
+                    object : Callback<ApiObjectResponse<Any>> {
+                        override fun onResponse(
+                            call: Call<ApiObjectResponse<Any>>,
+                            response: Response<ApiObjectResponse<Any>>
+                        ) {
+                            if (response.isSuccessful) {
+                                toast("✅ Property saved successfully.")
+                                MixpanelManager.track("Property created successfully", request)
+                                clearForm()
+                            } else {
+                                val errorString = response.errorBody()?.string()
+                                Log.e("NewPropertyActivity", "NOT isSuccessful")
+                                Log.d("NewPropertyActivity", "Error: ${errorString}")
+                                val errorMessage = Gson().fromJson(errorString, ApiListResponse::class.java)
+//                                if(response.errorBody()?.toString()?.contains("QR Code") == true) {
+//                                    toast("❌ QR code already assigned to another property.")
+//                                } else {
+                                    toast("❌ ${errorMessage?.message}")
+//                                }
 
-                toast("Property saved successfully ✅")
-                clearForm()
+                            }
+                        }
+
+                        override fun onFailure(
+                            call: Call<ApiObjectResponse<Any>?>,
+                            t: Throwable
+                        ) {
+                            toast("Save failed ❌")
+                            Log.e("NewPropertyActivity", "onFailure")
+                            t.printStackTrace()
+                            MixpanelManager.track("Property creation failed")
+                        }
+                    }
+                )
 
             } catch (e: Exception) {
+                e.printStackTrace()
                 toast("Save failed ❌")
             } finally {
                 showLoader(false)
             }
-        }
     }
 
     // ---------------------------
@@ -330,6 +391,8 @@ class NewPropertyActivity : AppCompatActivity() {
                 if(qrCode != null) {
 
                     findViewById<TextView>(R.id.tvQr).text = qrCode
+                    this.qrCode = qrCode
+
 
                 } else {
                     toast("Invalid QR code.")

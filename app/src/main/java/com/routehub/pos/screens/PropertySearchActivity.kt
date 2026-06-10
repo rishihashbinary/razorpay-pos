@@ -48,7 +48,7 @@ class PropertySearchActivity : AppCompatActivity() {
     private fun searchProperty(mobileNumber: String) {
         progressBar.visibility = View.VISIBLE
 
-        val call = ApiClient.retrofit.create(PropertiesService::class.java).getPropertyByMobileNumber(mobileNumber)
+        val call = ApiClient.retrofit.create(PropertiesService::class.java).getPropertyByMobileNumber(mobileNumber, "true")
 
         call.enqueue(object : Callback<PropertyResponse> {
 

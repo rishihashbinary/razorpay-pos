@@ -23,6 +23,9 @@
         tools:node="merge"
         tools:replace="android:allowBackup">
         <activity
+            android:name=".screens.dues.DueSelectionActivity"
+            android:exported="false" />
+        <activity
             android:name=".screens.NewPropertyActivity"
             android:exported="false" />
         <activity

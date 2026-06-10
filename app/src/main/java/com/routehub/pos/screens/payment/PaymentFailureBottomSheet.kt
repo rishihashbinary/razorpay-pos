@@ -8,7 +8,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.routehub.pos.R
 import com.routehub.pos.clients.ApiClient
 import com.routehub.pos.models.Reason
-import com.routehub.pos.models.responses.ApiResponse
+import com.routehub.pos.models.responses.ApiListResponse
 import com.routehub.pos.services.PaymentService
 import retrofit2.Call
 import retrofit2.Callback
@@ -57,8 +57,8 @@ class PaymentFailureBottomSheet(
 
     private fun setupRadioButtons() {
 
-        paymentService.getDenialReasons().enqueue(object : Callback<ApiResponse<Reason>> {
-            override fun onResponse(call: Call<ApiResponse<Reason>>, response: Response<ApiResponse<Reason>>) {
+        paymentService.getDenialReasons().enqueue(object : Callback<ApiListResponse<Reason>> {
+            override fun onResponse(call: Call<ApiListResponse<Reason>>, response: Response<ApiListResponse<Reason>>) {
                 if (response.isSuccessful) {
                     val reasons = response.body()?.data as List<Reason>
                     reasons.forEach { reason ->
@@ -70,7 +70,7 @@ class PaymentFailureBottomSheet(
                 }
             }
 
-            override fun onFailure(call: Call<ApiResponse<Reason>>, t: Throwable) {
+            override fun onFailure(call: Call<ApiListResponse<Reason>>, t: Throwable) {
                 t.printStackTrace()
             }
         });

@@ -1,24 +1,31 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.routehub.pos.helpers
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
 import androidx.core.app.ActivityCompat
-import com.google.android.gms.location.*
-import com.routehub.pos.helpers.PlayHelper
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 class LocationHelper(private val context: Context) {
 
-    private val fusedLocationClient =
-        LocationServices.getFusedLocationProviderClient(context)
+    private val locationManager =
+        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+    private val handler = Handler(Looper.getMainLooper())
+    private val listeners = mutableListOf<LocationListener>()
+
+    private var resolved = false
 
     companion object {
         const val LOCATION_PERMISSION_REQUEST_CODE = 1001
@@ -41,129 +48,131 @@ class LocationHelper(private val context: Context) {
         )
     }
 
-    // ✅ Get Last Known Location (fast but may be null)
-    fun getLastLocation(onResult: (Location?) -> Unit) {
-        if (!hasLocationPermission()) {
+    fun getCurrentLocation(
+        timeout: Long = 10_000L,
+        onResult: (Location?) -> Unit
+    ) {
+        resolved = false
+
+        // Step 1: Try last known location
+        val lastLocation = getBestLastKnownLocation()
+        if (lastLocation != null) {
+            onResult(lastLocation)
+            return
+        }
+
+        // Step 2: Get preferred providers (POS-friendly priority)
+        val providers = getAvailableProviders()
+
+        if (providers.isEmpty()) {
             onResult(null)
             return
         }
 
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location ->
-                onResult(location)
-            }
-            .addOnFailureListener {
+        // Step 3: Setup timeout
+        val timeoutRunnable = Runnable {
+            if (!resolved) {
+                resolved = true
+                clearListeners()
                 onResult(null)
             }
-    }
+        }
 
-    // ✅ Get Fresh Location (recommended)
-    fun getCurrentLocation(onResult: (Location?) -> Unit) {
+        // Step 4: Listen for updates
+        providers.forEach { provider ->
+            val listener = object : LocationListener {
+                override fun onLocationChanged(location: Location) {
+                    if (!resolved) {
+                        resolved = true
+                        handler.removeCallbacks(timeoutRunnable)
+                        clearListeners()
+                        onResult(location)
+                    }
+                }
 
-        if (!hasLocationPermission()) {
+                override fun onProviderDisabled(provider: String) {}
+                override fun onProviderEnabled(provider: String) {}
+
+                @Deprecated("Deprecated in Java")
+                override fun onStatusChanged(
+                    provider: String?,
+                    status: Int,
+                    extras: Bundle?
+                ) {}
+            }
+
+            try {
+                locationManager.requestLocationUpdates(
+                    provider,
+                    0L,
+                    0f,
+                    listener,
+                    Looper.getMainLooper()
+                )
+                listeners.add(listener)
+            } catch (_: SecurityException) {
+            } catch (_: Exception) {
+            }
+        }
+
+        if (listeners.isEmpty()) {
             onResult(null)
             return
         }
 
-        val locationRequest = LocationRequest.create().apply {
-            interval = 10000
-            fastestInterval = 5000
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-            numUpdates = 1 // 🔥 Only one update needed
-        }
-
-        val locationCallback = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                val location = result.lastLocation
-                onResult(location)
-                fusedLocationClient.removeLocationUpdates(this)
-            }
-        }
-
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.getMainLooper()
-        )
+        handler.postDelayed(timeoutRunnable, timeout)
     }
 
-    suspend fun getCurrentLocationSuspend(): Location? =
-        suspendCancellableCoroutine { continuation ->
-
-            if (!hasLocationPermission()) {
-                continuation.resume(null)
-                return@suspendCancellableCoroutine
-            }
-
-            val locationRequest = LocationRequest.create().apply {
-                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                numUpdates = 1
-            }
-
-            val callback = object : LocationCallback() {
-                override fun onLocationResult(result: LocationResult) {
-                    fusedLocationClient.removeLocationUpdates(this)
-                    continuation.resume(result.lastLocation)
-                }
-            }
-
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                callback,
-                Looper.getMainLooper()
-            )
-        }
-
-    @SuppressLint("MissingPermission")
-    fun getLocationUsingLocationManager(onResult: (Location?) -> Unit) {
-
-        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
+    private fun getBestLastKnownLocation(): Location? {
         val providers = locationManager.getProviders(true)
-
         var bestLocation: Location? = null
 
         for (provider in providers) {
-            val location = locationManager.getLastKnownLocation(provider)
-            if (location != null) {
-                if (bestLocation == null || location.accuracy < bestLocation.accuracy) {
-                    bestLocation = location
-                }
+            val location = try {
+                locationManager.getLastKnownLocation(provider)
+            } catch (_: SecurityException) {
+                null
+            } ?: continue
+
+            if (bestLocation == null || location.accuracy < bestLocation.accuracy) {
+                bestLocation = location
             }
         }
 
-        if (bestLocation != null) {
-            onResult(bestLocation)
-            return
-        }
-
-        // If no last known → request update
-        val listener = object : LocationListener {
-            override fun onLocationChanged(location: Location) {
-                onResult(location)
-                locationManager.removeUpdates(this)
-            }
-        }
-
-        try {
-            locationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                0L,
-                0f,
-                listener
-            )
-        } catch (e: Exception) {
-            onResult(null)
-        }
+        return bestLocation
     }
 
-    fun getLocation(
-        onResult: (Location?) -> Unit
-    ) {
-        if (PlayHelper.isGooglePlayServicesAvailable(context)) {
-            getCurrentLocation(onResult)
-        } else {
-            getLocationUsingLocationManager(onResult)
+    private fun getAvailableProviders(): List<String> {
+        return listOf(
+            LocationManager.NETWORK_PROVIDER,
+            LocationManager.GPS_PROVIDER,
+            LocationManager.PASSIVE_PROVIDER
+        ).filter { locationManager.isProviderEnabled(it) }
+    }
+
+    fun clearListeners() {
+        listeners.forEach {
+            try {
+                locationManager.removeUpdates(it)
+            } catch (_: Exception) {
+            }
+        }
+        listeners.clear()
+    }
+
+    suspend fun getCurrentLocationSuspend(
+        timeout: Long = 10_000L
+    ): Location? = suspendCancellableCoroutine { continuation ->
+
+        getCurrentLocation(timeout) { location ->
+            if (continuation.isActive) {
+                continuation.resume(location)
+            }
+        }
+
+        // Handle coroutine cancellation (VERY IMPORTANT)
+        continuation.invokeOnCancellation {
+            clearListeners()
         }
     }
 }

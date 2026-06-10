@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -26,17 +27,18 @@ import com.routehub.pos.helpers.PlayHelper
 import com.routehub.pos.helpers.ReceiptPrintHelper
 import com.routehub.pos.models.CollectionPeriod
 import com.routehub.pos.models.DirectCollection
+import com.routehub.pos.models.DueItem
 import com.routehub.pos.models.Property
 import com.routehub.pos.models.PropertyLocation
 import com.routehub.pos.models.Reason
 import com.routehub.pos.models.ReceiptData
-import com.routehub.pos.models.razorpay.Customer
-import com.routehub.pos.models.razorpay.Receipt
-import com.routehub.pos.models.razorpay.References
 import com.routehub.pos.models.razorpay.TransactionResponse
-import com.routehub.pos.models.responses.ApiResponse
+import com.routehub.pos.models.responses.ApiListResponse
+import com.routehub.pos.models.responses.ApiObjectResponse
+import com.routehub.pos.models.responses.BillData
 import com.routehub.pos.models.responses.PropertyResponse
 import com.routehub.pos.payments.PaymentLauncher
+import com.routehub.pos.screens.dues.DueSelectionActivity
 import com.routehub.pos.screens.payment.PaymentFailureBottomSheet
 import com.routehub.pos.services.BillService
 import com.routehub.pos.services.PropertiesService
@@ -46,6 +48,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.util.Calendar
+import java.util.Date
 
 class PropertyDetailsActivity : AppCompatActivity() {
 
@@ -53,7 +56,8 @@ class PropertyDetailsActivity : AppCompatActivity() {
     var hasLocation: Boolean = false;
     private lateinit var locationHelper: LocationHelper
     lateinit var btnPayment: Button
-//    lateinit var txtMessage: TextView
+    lateinit var txtMessage: TextView
+    lateinit var txtFee: TextView
 
     val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
     val billsService = ApiClient.retrofit.create(BillService::class.java)
@@ -63,6 +67,8 @@ class PropertyDetailsActivity : AppCompatActivity() {
 //    private var googleMap: GoogleMap? = null
 
     var reasons: List<Reason>? = null;
+
+    private var dueList: List<DueItem> = emptyList()
 
 
     fun startPayment(amount: Float?, orderId: String) {
@@ -115,9 +121,6 @@ class PropertyDetailsActivity : AppCompatActivity() {
         val qrCode = intent.getStringExtra("qrCode")
         val propertyDetails = intent.getStringExtra("propertyDetails")
 
-        println("Fetching details for QR code: $qrCode")
-        println("Fetching details for JSON: $propertyDetails")
-
         val props = JSONObject()
         props.put("qrCode", qrCode)
         if(qrCode !== null) {
@@ -138,28 +141,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
             )
         }
 
-        // Step 1: Check permission
-//        if (!locationHelper.hasLocationPermission()) {
-//            Toast.makeText(this, "No location permission found, requesting.", Toast.LENGTH_LONG).show();
-//            locationHelper.requestPermission(this)
-//        } else {
-////            Toast.makeText(this, "Fetching location...", Toast.LENGTH_SHORT).show();
-//            // Step 2: Get location
-//            locationHelper.getLocation { location ->
-//                if (location != null) {
-////                    Toast.makeText(this, "Got Location!", Toast.LENGTH_LONG).show();
-//                    val lat = location.latitude
-//                    val lng = location.longitude
-//                    hasLocation = true;
-////                    resetMessage()
-////                    btnPayment.isEnabled = hasLocation
-//                    println("Lat: $lat, Lng: $lng")
-//                } else {
-//                    Toast.makeText(this, "Cannot fetch location!", Toast.LENGTH_LONG).show();
-//                    println("Unable to fetch location")
-//                }
-//            }
-//        }
+
 
         super.onCreate(savedInstanceState)
 
@@ -179,15 +161,38 @@ class PropertyDetailsActivity : AppCompatActivity() {
         val txtType = findViewById<TextView>(R.id.txtType)
         val txtCategory = findViewById<TextView>(R.id.txtCategory)
         val txtUsage = findViewById<TextView>(R.id.txtUsage)
-        val txtFee = findViewById<TextView>(R.id.txtFee)
-//        txtMessage = findViewById<TextView>(R.id.txtMessage)
+        txtFee = findViewById<TextView>(R.id.txtFee)
+        txtMessage = findViewById<TextView>(R.id.txtMessage)
         btnPayment = findViewById<Button>(R.id.btnPayment)
 
-//        if(!hasLocation) {
-//            txtMessage.setText(getString(R.string.please_enable_location_to_continue))
-//        }
+        //         Step 1: Check permission
+        if (!locationHelper.hasLocationPermission()) {
+            Toast.makeText(this, "No location permission found, requesting.", Toast.LENGTH_LONG).show();
+            locationHelper.requestPermission(this)
+        } else {
+//            Toast.makeText(this, "Fetching location...", Toast.LENGTH_SHORT).show();
+            // Step 2: Get location
+            locationHelper.getCurrentLocation { location ->
+                if (location != null) {
+//                    Toast.makeText(this, "Got Location!", Toast.LENGTH_LONG).show();
+                    val lat = location.latitude
+                    val lng = location.longitude
+                    hasLocation = true;
+                    resetMessage()
+                    btnPayment.isEnabled = hasLocation
+                    println("Lat: $lat, Lng: $lng")
+                } else {
+                    Toast.makeText(this, "Cannot fetch location!", Toast.LENGTH_LONG).show();
+                    println("Unable to fetch location")
+                }
+            }
+        }
 
-//        btnPayment.isEnabled = hasLocation
+        if(!hasLocation) {
+            txtMessage.setText(getString(R.string.please_enable_location_to_continue))
+        }
+
+        btnPayment.isEnabled = hasLocation
 
         if(qrCode !== null) {
             apiService.getPropertyByQr(qrCode, "true").enqueue(object : Callback<PropertyResponse> {
@@ -275,6 +280,17 @@ class PropertyDetailsActivity : AppCompatActivity() {
             if (property?.rate === null) {
                 btnPayment.isEnabled = false
                 txtFee.text = "No Fee Data!"
+            } else {
+                txtFee.setOnClickListener {
+                    MixpanelManager.track("Due Breakdown Clicked")
+                    val intent = Intent(this, DueSelectionActivity::class.java)
+                    intent.putParcelableArrayListExtra(
+                        DueSelectionActivity.EXTRA_DUES,
+                        ArrayList(dueList)
+                    )
+
+                    dueLauncher.launch(intent)
+                }
             }
         }
 
@@ -337,11 +353,11 @@ class PropertyDetailsActivity : AppCompatActivity() {
                         remark = remarks
                     )
 
-                    billsService.denyPayment(denialDetails).enqueue(object : Callback<ApiResponse<Any>> {
+                    billsService.denyPayment(denialDetails).enqueue(object : Callback<ApiListResponse<Any>> {
 
                         override fun onResponse(
-                            call: Call<ApiResponse<Any>>,
-                            response: Response<ApiResponse<Any>>
+                            call: Call<ApiListResponse<Any>>,
+                            response: Response<ApiListResponse<Any>>
                         ) {
                             if (response.isSuccessful) {
                                 val body = response.body()
@@ -351,7 +367,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
                             }
                         }
 
-                        override fun onFailure(call: Call<ApiResponse<Any>>, t: Throwable) {
+                        override fun onFailure(call: Call<ApiListResponse<Any>>, t: Throwable) {
                             t.printStackTrace()
                         }
                     })
@@ -360,6 +376,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
             bottomSheet.show(supportFragmentManager, "PaymentFailure")
         }
+        fetchBills()
     }
 
     override fun onActivityResult(
@@ -371,49 +388,10 @@ class PropertyDetailsActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         val paymentResult = JSONObject()
 
-//        val transactionId = data?.getStringExtra("transactionId")
         val status = data?.getStringExtra("status")
-
-//        val paymentMode = data?.getStringExtra("paymentMode")
-//            ?: data?.getStringExtra("payment_type")
-//            ?: data?.getStringExtra("mode")
-//            ?: data?.getStringExtra("txnType")
-//            ?: "UNKNOWN"
-
-
 
         val response = data?.getStringExtra("response")
         Log.d("PropertyDetailsActivity", "Response: $response")
-
-//        val paymentMode = try {
-//            val response = data?.getStringExtra("response")
-//            if (response != null) {
-//                val json = JSONObject(response)
-//                json.getJSONObject("result")
-//                    .getJSONObject("txn")
-//                    .optString("paymentMode", "UNKNOWN")
-//            } else {
-//                "UNKNOWN"
-//            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            "UNKNOWN"
-//        }
-//
-//        val transactionId = try {
-//            val response = data?.getStringExtra("response")
-//            if (response != null) {
-//                val json = JSONObject(response)
-//                json.getJSONObject("result")
-//                    .getJSONObject("txn")
-//                    .optString("txnId", "UNKNOWN")
-//            } else {
-//                "UNKNOWN"
-//            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            "UNKNOWN"
-//        }
 
         val result = try {
             val response = data?.getStringExtra("response")
@@ -466,10 +444,6 @@ class PropertyDetailsActivity : AppCompatActivity() {
                         lng = location.longitude
                     }
 
-//                val transactionId = data?.getStringExtra("transactionId")
-//
-//                val status = data?.getStringExtra("status")
-
                     val calendar = Calendar.getInstance()
                     val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-based
                     val year = calendar.get(Calendar.YEAR)
@@ -493,11 +467,11 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     )
 
                     billsService.createDirectCollection(request)
-                        .enqueue(object : Callback<ApiResponse<Any>> {
+                        .enqueue(object : Callback<ApiListResponse<Any>> {
 
                             override fun onResponse(
-                                call: Call<ApiResponse<Any>>,
-                                response: Response<ApiResponse<Any>>
+                                call: Call<ApiListResponse<Any>>,
+                                response: Response<ApiListResponse<Any>>
                             ) {
                                 if (response.isSuccessful) {
                                     val body = response.body()
@@ -507,7 +481,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
                                 }
                             }
 
-                            override fun onFailure(call: Call<ApiResponse<Any>>, t: Throwable) {
+                            override fun onFailure(call: Call<ApiListResponse<Any>>, t: Throwable) {
                                 t.printStackTrace()
                             }
                         })
@@ -573,7 +547,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     val lng = location.longitude
                     hasLocation = true;
                     btnPayment.isEnabled = hasLocation
-//                    resetMessage()
+                    resetMessage()
                     Log.d("PropertyDetailsActivity","onRequestPermissionsResult::Lat: $lat, Lng: $lng")
                 } else {
                     println("Unable to fetch location")
@@ -583,17 +557,82 @@ class PropertyDetailsActivity : AppCompatActivity() {
         }
     }
 
-//    fun resetMessage() {
-//        if (hasLocation) {
-//            txtMessage.setText("")
-//        } else {
-//            txtMessage.setText(getString(R.string.please_enable_location_to_continue))
-//        }
-//    }
+    fun resetMessage() {
+        if (hasLocation) {
+            txtMessage.setText("")
+        } else {
+            txtMessage.setText(getString(R.string.please_enable_location_to_continue))
+        }
+    }
 
     fun navigateToHome() {
         val intent = Intent(this, HomeActivity::class.java)
         startActivity(intent)
+    }
+
+    private val dueLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val data = result.data
+
+            val selectedDues =
+                data?.getParcelableArrayListExtra<DueItem>(
+                    DueSelectionActivity.RESULT_SELECTED_DUES
+                ) ?: emptyList()
+
+            val total =
+                data?.getDoubleExtra(
+                    DueSelectionActivity.RESULT_TOTAL,
+                    0.0
+                ) ?: 0.0
+
+            // ✅ Update your UI here
+        }
+    }
+
+    private fun fetchBills() {
+        billsService.getPropertyBills(property?._id, 1, 50).enqueue(object : Callback<ApiObjectResponse<BillData>> {
+            override fun onResponse(
+                call: Call<ApiObjectResponse<BillData>>,
+                response: Response<ApiObjectResponse<BillData>>
+            ) {
+                if (response.isSuccessful) {
+                    val bills = response.body()?.data?.bills ?: emptyList()
+//                    println("Success: ${body?.data}")
+                    // ✅ Convert to DueItems (only pending)
+                    val dueItems = bills
+//                        .filter { it.status == "PENDING" } // adjust based on API
+                        .map {
+                            DueItem(
+                                id = it._id ?: Date().time.toString(),
+                                monthLabel = "${it.billPeriod.month} - ${it.billPeriod.year}",
+                                amount = it.billAmount ?: 0.0,
+                                isSelected = true
+                            )
+                        }
+
+                    // ✅ Calculate total due
+                    val totalDue = dueItems.sumOf { it.amount }
+
+                    // 👉 Update UI on current screen
+                    updateAmountDueUI(totalDue, dueItems.size)
+
+                    // 👉 Store for later navigation
+                    this@PropertyDetailsActivity.dueList = dueItems
+                } else {
+                    println("Error: ${response.errorBody()?.string()}")
+                }
+            }
+            override fun onFailure(call: Call<ApiObjectResponse<BillData>>, t: Throwable) {
+                t.printStackTrace()
+            }
+        })
+    }
+
+    private fun updateAmountDueUI(total: Double, count: Int) {
+        txtFee.text = "₹$total"
+//        tvSubLabel.text = "$count months pending"
     }
 
 //    override fun onMapReady(map: GoogleMap) {

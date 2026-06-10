@@ -24,16 +24,18 @@ class HomeActivity : AppCompatActivity() {
 
             val jsonRequest = JSONObject()
 
-            jsonRequest.put("demoAppKey", "8901c766-f261-4631-ad8b-6771de798728")
-            jsonRequest.put("prodAppKey", "8901c766-f261-4631-ad8b-6771de798728")
+//            jsonRequest.put("demoAppKey", "8901c766-f261-4631-ad8b-6771de798728")
+            jsonRequest.put("demoAppKey", "e7b363a7-9a1a-4820-8667-a23ff686a5ea")
+            jsonRequest.put("prodAppKey", "e7b363a7-9a1a-4820-8667-a23ff686a5ea")
 
             jsonRequest.put("merchantName", "ASR_SMARTCITY_PVT_LTD")
-            jsonRequest.put("userName", "5600430241")
+//            jsonRequest.put("userName", "5600430241")
+            jsonRequest.put("userName", "5656541111")
 
             jsonRequest.put("currencyCode", "INR")
 
             // Demo or PROD
-            jsonRequest.put("appMode", "DEMO")
+            jsonRequest.put("appMode", "PROD")
 
             jsonRequest.put("captureSignature", "true")
             jsonRequest.put("prepareDevice", "false")

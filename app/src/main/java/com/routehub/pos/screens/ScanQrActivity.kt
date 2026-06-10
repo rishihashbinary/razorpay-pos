@@ -58,7 +58,7 @@ class ScanQrActivity : AppCompatActivity() {
                 if(qrCode != null) {
 
                     val intent = Intent(this, PropertyDetailsActivity::class.java)
-                    intent.putExtra("qrCode", qrValue)
+                    intent.putExtra("qrCode", qrCode)
                     startActivity(intent)
                 } else {
                     Toast.makeText(this, "Invalid QR code.", Toast.LENGTH_LONG).show()

@@ -1,14 +1,13 @@
 package com.routehub.pos.services
 
 import com.routehub.pos.models.DirectCollection
-import com.routehub.pos.models.Payment
-import com.routehub.pos.models.responses.ApiResponse
+import com.routehub.pos.models.responses.ApiListResponse
+import com.routehub.pos.models.responses.ApiObjectResponse
 import com.routehub.pos.models.responses.BillData
 import com.routehub.pos.models.responses.PropertyResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -22,15 +21,17 @@ interface BillService {
     @POST("transaction/direct-collection")
     fun createDirectCollection(
         @Body request: DirectCollection
-    ): Call<ApiResponse<Any>>
+    ): Call<ApiListResponse<Any>>
 
     @POST("transaction/deny")
-    fun denyPayment(@Body request: DirectCollection): Call<ApiResponse<Any>>
+    fun denyPayment(@Body request: DirectCollection): Call<ApiListResponse<Any>>
 
-    @GET("api/bill/property/{propertyId}")
-    suspend fun getPropertyBills(
-        @Path("propertyId") propertyId: String,
-        @Query("page") page: Int,
-        @Query("limit") limit: Int,
-    ): ApiResponse<BillData>
+    @GET("bill/property/{propertyId}")
+    fun getPropertyBills(
+        @Path("propertyId") propertyId: String?,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20,
+    ): Call<ApiObjectResponse<BillData>>
+
+
 }
