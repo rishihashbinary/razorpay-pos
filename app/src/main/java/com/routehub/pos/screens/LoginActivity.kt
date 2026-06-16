@@ -1,4 +1,4 @@
-package com.routehub.pos.screens
+    package com.routehub.pos.screens
 
 import android.content.Intent
 import android.os.Bundle
@@ -47,8 +47,11 @@ class LoginActivity : AppCompatActivity() {
         val password = findViewById<EditText>(R.id.password)
         val loginBtn = findViewById<Button>(R.id.loginBtn)
 
-        username.setText("asr.ucc")
-        password.setText("Asr@1234")
+//        username.setText("asr.ucc")
+//        password.setText("Asr@1234")
+
+//        username.setText("amritsar.pt1")
+//        password.setText("Tagger@123")
 
         loginBtn.setOnClickListener {
 
