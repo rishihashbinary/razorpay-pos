@@ -420,7 +420,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
         paymentResult.put("transactionId", txn?.txnId)
         paymentResult.put("status", status)
 
-        MixpanelManager.track("Payment Result", JSONObject(response))
+        MixpanelManager.track("Payment Result", response)
 
         Log.d("PropertyDetailsActivity", "Request Code: $requestCode == $PaymentLauncher.REQUEST_CODE_PAYMENT")
         Log.d("PropertyDetailsActivity", "Result Code: $resultCode == $RESULT_OK")
@@ -587,7 +587,9 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     0.0
                 ) ?: 0.0
 
-            // ✅ Update your UI here
+            Log.d("PropertyDetailsActivity", "Selected Dues: $total")
+
+            txtFee.text = "₹$total"
         }
     }
 

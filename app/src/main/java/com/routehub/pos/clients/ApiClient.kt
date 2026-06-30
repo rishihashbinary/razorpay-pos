@@ -9,8 +9,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
 
-    private const val BASE_URL = "https://app.ecosense-enviro.com/api/"
-//    private const val BASE_URL = "https://dev.ecosense-enviro.com/api/"
+//    private const val BASE_URL = "https://app.ecosense-enviro.com/api/"
+    private const val BASE_URL = "https://dev.ecosense-enviro.com/api/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

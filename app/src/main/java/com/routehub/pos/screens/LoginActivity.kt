@@ -50,8 +50,8 @@ class LoginActivity : AppCompatActivity() {
 //        username.setText("asr.ucc")
 //        password.setText("Asr@1234")
 
-//        username.setText("amritsar.pt1")
-//        password.setText("Tagger@123")
+        username.setText("amritsar.pt1")
+        password.setText("Tagger@123")
 
         loginBtn.setOnClickListener {
 
