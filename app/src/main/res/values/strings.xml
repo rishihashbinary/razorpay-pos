@@ -36,4 +36,7 @@
     <string name="additional_remarks_optional">Additional remarks (optional)</string>
     <string name="submit">Submit</string>
     <string name="tap_to_scan_qr_code">Tap to scan QR code</string>
+    <string name="no_network_new_transactions_blocked">No network — new transactions blocked</string>
+    <string name="network_unstable">Weak network — transactions may be delayed</string>
+    <string name="network_offline">No network — new transactions blocked</string>
 </resources>

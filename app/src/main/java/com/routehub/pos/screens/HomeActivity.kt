@@ -1,8 +1,11 @@
 package com.routehub.pos.screens
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -12,11 +15,19 @@ import com.routehub.pos.fragments.CollectionFragment
 import com.routehub.pos.fragments.settings.SettingsFragment
 import com.routehub.pos.helpers.LocaleHelper
 import com.eze.api.EzeAPI
+import com.routehub.pos.network.NetworkMonitor
+import com.routehub.pos.network.NetworkState
+import com.routehub.pos.network.NetworkStateAware
 import org.json.JSONObject
 
 class HomeActivity : AppCompatActivity() {
 
     private val REQUEST_CODE_INITIALIZE = 10001
+
+    private lateinit var networkMonitor: NetworkMonitor
+    private lateinit var networkRibbon: TextView
+
+    var currentNetworkState: NetworkState = NetworkState.OFFLINE
 
     fun initializePOS() {
 
@@ -57,6 +68,12 @@ class HomeActivity : AppCompatActivity() {
         initializePOS()
 
         setContentView(R.layout.activity_home)
+
+        networkRibbon = findViewById(R.id.networkRibbon)
+
+        networkMonitor = NetworkMonitor(this) { state ->
+            updateRibbon(state)
+        }
 
         val nav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
@@ -109,5 +126,43 @@ class HomeActivity : AppCompatActivity() {
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        networkMonitor.start()
+        Log.d("HomeActivity", "onStart: Network monitor started")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        networkMonitor.stop()
+        Log.d("HomeActivity", "onStop: Network monitor stopped")
+    }
+
+    private fun updateRibbon(state: NetworkState) {
+        currentNetworkState = state
+
+        when (state) {
+            NetworkState.STABLE -> {
+                networkRibbon.visibility = View.GONE
+            }
+            NetworkState.UNSTABLE -> {
+                networkRibbon.visibility = View.VISIBLE
+                networkRibbon.text = getString(R.string.network_unstable) // "Weak network — transactions may be delayed"
+                networkRibbon.setBackgroundColor(Color.parseColor("#F59E0B")) // amber
+            }
+            NetworkState.OFFLINE -> {
+                networkRibbon.visibility = View.VISIBLE
+                networkRibbon.text = getString(R.string.network_offline) // "No network — new transactions blocked"
+                networkRibbon.setBackgroundColor(Color.parseColor("#DC2626")) // red
+            }
+        }
+
+        // Notify the currently visible fragment so it can disable
+        // its "New Transaction" CTA, e.g. via an interface or a
+        // shared ViewModel both Activity and Fragment observe.
+        (supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? NetworkStateAware)
+            ?.onNetworkStateChanged(state)
     }
 }
