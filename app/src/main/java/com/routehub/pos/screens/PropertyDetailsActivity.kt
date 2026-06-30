@@ -379,6 +379,25 @@ class PropertyDetailsActivity : AppCompatActivity() {
         fetchBills()
     }
 
+    override fun onResume() {
+        super.onResume()
+        Log.d("PropertyDetailsActivity", "onResume: Checking location")
+        locationHelper.getCurrentLocation { location ->
+            if (location != null) {
+//                    Toast.makeText(this, "Got Location!", Toast.LENGTH_LONG).show();
+                val lat = location.latitude
+                val lng = location.longitude
+                hasLocation = true;
+                resetMessage()
+                btnPayment.isEnabled = hasLocation
+                Log.d("PropertyDetailsActivity", "onResume: Lat: $lat, Lng: $lng")
+            } else {
+                Toast.makeText(this, "Cannot fetch location!", Toast.LENGTH_LONG).show();
+                println("Unable to fetch location")
+            }
+        }
+    }
+
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,

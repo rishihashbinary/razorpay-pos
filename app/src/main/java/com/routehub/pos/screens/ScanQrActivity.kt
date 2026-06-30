@@ -35,13 +35,13 @@ class ScanQrActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MixpanelManager.track("ScanQrActivity::onCreate")
-        if (savedInstanceState == null) {
+//        if (savedInstanceState == null) {
             MixpanelManager.track("ScanQrActivity::savedInstanceState is NULL")
             startScanner()
-        } else {
-            MixpanelManager.track("ScanQrActivity::onCreate::finish")
-            finish()
-        }
+//        } else {
+//            MixpanelManager.track("ScanQrActivity::onCreate::finish")
+//            finish()
+//        }
     }
 
     private fun startScanner() {
