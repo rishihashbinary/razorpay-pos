@@ -70,6 +70,8 @@ class HomeActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
+//        resetOnboardingSeen()
+
         initializePOS()
 
         setContentView(R.layout.activity_home)
@@ -189,6 +191,13 @@ class HomeActivity : AppCompatActivity() {
         getSharedPreferences(PREF_ONBOARDING, MODE_PRIVATE)
             .edit()
             .putBoolean(KEY_SEEN_FEE_COLLECTION_ONBOARDING, true)
+            .apply()
+    }
+
+    private fun resetOnboardingSeen() {
+        getSharedPreferences(PREF_ONBOARDING, MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_SEEN_FEE_COLLECTION_ONBOARDING, false)
             .apply()
     }
 
