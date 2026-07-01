@@ -10,5 +10,6 @@ data class ReceiptData(
     val customerName: String? = "",
     val usageType: String? = "",
     val customerPhone: String? = "",
-    val receiptDate: String? = ""
+    val receiptDate: String? = "",
+    val isDuplicate: Boolean? = false
 )
