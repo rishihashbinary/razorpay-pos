@@ -9,15 +9,19 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.routehub.pos.R
 import com.routehub.pos.fragments.CollectionFragment
 import com.routehub.pos.fragments.settings.SettingsFragment
 import com.routehub.pos.helpers.LocaleHelper
 import com.eze.api.EzeAPI
+import com.getkeepsafe.taptargetview.TapTarget
+import com.getkeepsafe.taptargetview.TapTargetSequence
 import com.routehub.pos.network.NetworkMonitor
 import com.routehub.pos.network.NetworkState
 import com.routehub.pos.network.NetworkStateAware
+import com.routehub.pos.onboarding.OnboardingTargetProvider
 import org.json.JSONObject
 
 class HomeActivity : AppCompatActivity() {
@@ -26,6 +30,7 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var networkMonitor: NetworkMonitor
     private lateinit var networkRibbon: TextView
+    private lateinit var bottomNavigation: BottomNavigationView
 
     var currentNetworkState: NetworkState = NetworkState.OFFLINE
 
@@ -75,11 +80,11 @@ class HomeActivity : AppCompatActivity() {
             updateRibbon(state)
         }
 
-        val nav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
+        bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
         loadFragment(CollectionFragment())
 
-        nav.setOnItemSelectedListener {
+        bottomNavigation.setOnItemSelectedListener {
 
             when (it.itemId) {
 
@@ -91,7 +96,102 @@ class HomeActivity : AppCompatActivity() {
 
             true
         }
+        // Wait for the fragment's view to actually be laid out before
+        // attempting to read view bounds for the tap targets.
+        supportFragmentManager.registerFragmentLifecycleCallbacks(
+            object : FragmentManager.FragmentLifecycleCallbacks() {
+                override fun onFragmentViewCreated(
+                    fm: FragmentManager,
+                    fragment: Fragment,
+                    v: View,
+                    savedInstanceState: Bundle?
+                ) {
+                    if (fragment is CollectionFragment) {
+                        v.post { maybeShowOnboarding(fragment) }
+                        // Only need this once
+                        fm.unregisterFragmentLifecycleCallbacks(this)
+                    }
+                }
+            },
+            false
+        )
     }
+
+    private fun maybeShowOnboarding(fragment: CollectionFragment) {
+        val prefs = getSharedPreferences(PREF_ONBOARDING, MODE_PRIVATE)
+        if (prefs.getBoolean(KEY_SEEN_FEE_COLLECTION_ONBOARDING, false)) return
+
+        showOnboarding(fragment)
+    }
+
+    private fun showOnboarding(fragment: OnboardingTargetProvider) {
+
+        val tabCollection = bottomNavigation.findViewById<View>(R.id.nav_collection)
+        val tabSettings = bottomNavigation.findViewById<View>(R.id.nav_settings)
+
+        val scanQr = fragment.getScanQrView()
+        val mobileNumber = fragment.getMobileNumberView()
+        val addManually = fragment.getAddManuallyView()
+
+        // Guard: if any target view isn't available yet, skip rather than crash
+        if (scanQr == null || mobileNumber == null || addManually == null) {
+            Log.w("Onboarding", "Target views not ready, skipping onboarding")
+            return
+        }
+
+        TapTargetSequence(this)
+            .targets(
+                TapTarget.forView(
+                    tabCollection,
+                    "Collection Tab",
+                    getString(R.string.scan_or_search_properties_here_to_collect_fees)
+                ).cancelable(false)
+                    .transparentTarget(true),
+
+                TapTarget.forView(
+                    tabSettings,
+                    "Settings Tab",
+                    getString(R.string.settings_onboarding)
+                ).cancelable(false)
+                    .transparentTarget(true),
+
+                TapTarget.forView(
+                    scanQr,
+                    getString(R.string.scan_qr),
+                    getString(R.string.scan_qr_onboarding)
+                ).cancelable(false),
+
+                TapTarget.forView(
+                    mobileNumber,
+                    getString(R.string.mobile_number),
+                    getString(R.string.search_property_onboarding)
+                ).cancelable(false),
+
+                TapTarget.forView(
+                    addManually,
+                    getString(R.string.add_manually),
+                    getString(R.string.add_property_onboarding)
+                ).cancelable(false)
+            )
+            .listener(object : TapTargetSequence.Listener {
+                override fun onSequenceFinish() {
+                    markOnboardingSeen()
+                }
+                override fun onSequenceStep(lastTarget: TapTarget?, targetClicked: Boolean) {}
+                override fun onSequenceCanceled(lastTarget: TapTarget?) {
+                    markOnboardingSeen()
+                }
+            })
+            .start()
+    }
+
+    private fun markOnboardingSeen() {
+        getSharedPreferences(PREF_ONBOARDING, MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_SEEN_FEE_COLLECTION_ONBOARDING, true)
+            .apply()
+    }
+
 
     private fun loadFragment(fragment: Fragment) {
 
@@ -164,5 +264,10 @@ class HomeActivity : AppCompatActivity() {
         // shared ViewModel both Activity and Fragment observe.
         (supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? NetworkStateAware)
             ?.onNetworkStateChanged(state)
+    }
+
+    companion object {
+        private const val PREF_ONBOARDING = "onboarding"
+        private const val KEY_SEEN_FEE_COLLECTION_ONBOARDING = "seen_fee_collection_onboarding"
     }
 }

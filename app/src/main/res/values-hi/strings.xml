@@ -34,4 +34,16 @@
     <string name="reason_for_rejection">अस्वीकृति का कारण</string>
     <string name="additional_remarks_optional">अतिरिक्त टिप्पणियाँ (वैकल्पिक)</string>
     <string name="submit">जमा करें</string>
+    <string name="tap_to_scan_qr_code">QR कोड स्कैन करने के लिए टैप करें</string>
+    <string name="no_network_new_transactions_blocked">नेटवर्क नहीं है — नए लेनदेन रोक दिए गए हैं</string>
+    <string name="network_unstable">कमज़ोर नेटवर्क — लेनदेन में देरी हो सकती है</string>
+    <string name="network_offline">नेटवर्क नहीं है — नए लेनदेन रोक दिए गए हैं</string>
+    <string name="collection_tab">कलेक्शन टैब</string>
+    <string name="scan_or_search_properties_here_to_collect_fees">शुल्क वसूलने के लिए यहाँ संपत्तियों को स्कैन करें या खोजें।</string>
+    <string name="settings_tab">सेटिंग्स टैब</string>
+    <string name="settings_onboarding">यहाँ सेटिंग्स कॉन्फ़िगर करें।</string>
+    <string name="scan_qr_onboarding">संपत्ति का बकाया तुरंत देखने के लिए उसका QR कोड स्कैन करें।</string>
+    <string name="search_property_onboarding">मालिक के पंजीकृत मोबाइल नंबर का उपयोग करके संपत्ति खोजें।</string>
+    <string name="add_manually">मैन्युअल रूप से जोड़ें</string>
+    <string name="add_property_onboarding">अगर कोई संपत्ति QR या मोबाइल नंबर से नहीं मिलती है, तो उसे यहाँ जोड़ें।</string>
 </resources>

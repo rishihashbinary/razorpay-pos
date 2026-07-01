@@ -34,4 +34,16 @@
     <string name="reason_for_rejection">ਰੱਦ ਕਰਨ ਦਾ ਕਾਰਨ</string>
     <string name="additional_remarks_optional">ਵਾਧੂ ਟਿੱਪਣੀਆਂ (ਚੋਣਵਾਂ)</string>
     <string name="submit">ਜਮ੍ਹਾਂ ਕਰੋ</string>
+    <string name="tap_to_scan_qr_code">QR ਕੋਡ ਸਕੈਨ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ</string>
+    <string name="no_network_new_transactions_blocked">ਨੈੱਟਵਰਕ ਨਹੀਂ ਹੈ — ਨਵੇਂ ਲੈਣ-ਦੇਣ ਰੋਕ ਦਿੱਤੇ ਗਏ ਹਨ</string>
+    <string name="network_unstable">ਕਮਜ਼ੋਰ ਨੈੱਟਵਰਕ — ਲੈਣ-ਦੇਣ ਵਿੱਚ ਦੇਰੀ ਹੋ ਸਕਦੀ ਹੈ</string>
+    <string name="network_offline">ਨੈੱਟਵਰਕ ਨਹੀਂ ਹੈ — ਨਵੇਂ ਲੈਣ-ਦੇਣ ਰੋਕ ਦਿੱਤੇ ਗਏ ਹਨ</string>
+    <string name="collection_tab">ਕਲੈਕਸ਼ਨ ਟੈਬ</string>
+    <string name="scan_or_search_properties_here_to_collect_fees">ਫੀਸ ਵਸੂਲਣ ਲਈ ਇੱਥੇ ਜਾਇਦਾਦਾਂ ਨੂੰ ਸਕੈਨ ਕਰੋ ਜਾਂ ਖੋਜੋ।</string>
+    <string name="settings_tab">ਸੈਟਿੰਗਾਂ ਟੈਬ</string>
+    <string name="settings_onboarding">ਇੱਥੇ ਸੈਟਿੰਗਾਂ ਕੌਂਫਿਗਰ ਕਰੋ।</string>
+    <string name="scan_qr_onboarding">ਜਾਇਦਾਦ ਦਾ ਬਕਾਇਆ ਤੁਰੰਤ ਵੇਖਣ ਲਈ ਉਸਦਾ QR ਕੋਡ ਸਕੈਨ ਕਰੋ।</string>
+    <string name="search_property_onboarding">ਮਾਲਕ ਦੇ ਰਜਿਸਟਰਡ ਮੋਬਾਈਲ ਨੰਬਰ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਜਾਇਦਾਦ ਖੋਜੋ।</string>
+    <string name="add_manually">ਖੁਦ ਸ਼ਾਮਲ ਕਰੋ</string>
+    <string name="add_property_onboarding">ਜੇ ਕੋਈ ਜਾਇਦਾਦ QR ਜਾਂ ਮੋਬਾਈਲ ਨੰਬਰ ਰਾਹੀਂ ਨਹੀਂ ਮਿਲਦੀ, ਤਾਂ ਉਸਨੂੰ ਇੱਥੇ ਸ਼ਾਮਲ ਕਰੋ।</string>
 </resources>

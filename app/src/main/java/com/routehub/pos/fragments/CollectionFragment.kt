@@ -11,13 +11,14 @@ import com.eze.api.EzeAPI
 import com.routehub.pos.R
 import com.routehub.pos.helpers.ReceiptPrintHelper
 import com.routehub.pos.models.ReceiptData
+import com.routehub.pos.onboarding.OnboardingTargetProvider
 import com.routehub.pos.screens.NewPropertyActivity
 import com.routehub.pos.screens.PropertyDetailsActivity
 import com.routehub.pos.screens.PropertySearchActivity
 import com.routehub.pos.screens.ScanQrActivity
 import org.json.JSONObject
 
-class CollectionFragment : Fragment() {
+class CollectionFragment : Fragment(), OnboardingTargetProvider {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -85,4 +86,8 @@ class CollectionFragment : Fragment() {
 
         return view
     }
+
+    override fun getScanQrView(): View? = view?.findViewById(R.id.btnQrScan)
+    override fun getMobileNumberView(): View? = view?.findViewById(R.id.btnMobileSearch)
+    override fun getAddManuallyView(): View? = view?.findViewById(R.id.tvAddProperty)
 }
