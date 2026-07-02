@@ -61,6 +61,8 @@ object ReceiptPrintHelper {
         view.findViewById<TextView>(R.id.CustPhone).text = data.customerPhone
         view.findViewById<TextView>(R.id.ReceiptDate).text = data.receiptDate
         view.findViewById<TextView>(R.id.CustomerUsage).text = data.usageType
+        view.findViewById<TextView>(R.id.txtDuplicateIndicator).visibility =
+            if (data.isDuplicate == true) View.VISIBLE else View.GONE
 
         view.measure(
             View.MeasureSpec.makeMeasureSpec(384, View.MeasureSpec.EXACTLY),

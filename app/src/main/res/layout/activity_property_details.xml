@@ -202,4 +202,29 @@
         android:textSize="16sp"
         android:textStyle="bold" />
 
+
+    <Button
+        android:id="@+id/btnReprintReceipt"
+        style="@style/Button.Success"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="12dp"
+        android:text="@string/reprint_receipt"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnBack"
+        style="@style/Button.Secondary"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/back"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
 </LinearLayout>

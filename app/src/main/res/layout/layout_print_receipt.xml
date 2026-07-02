@@ -31,10 +31,12 @@
         android:text="------------------------------"
         android:gravity="center"
         android:textColor="@android:color/black" />
+
     <TextView
+        android:id="@+id/txtDuplicateIndicator"
         android:layout_width="match_parent"
         android:layout_weight="1"
-        android:text="This is a duplicate receipt."
+        android:text="*** DUPLICATE RECEIPT ***"
         android:textSize="12sp"
         android:textAlignment="center"
         android:visibility="gone"
