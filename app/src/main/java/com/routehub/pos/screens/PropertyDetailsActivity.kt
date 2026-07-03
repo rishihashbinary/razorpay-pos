@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -41,6 +42,7 @@ import com.routehub.pos.payments.PaymentLauncher
 import com.routehub.pos.screens.dues.DueSelectionActivity
 import com.routehub.pos.screens.payment.PaymentFailureBottomSheet
 import com.routehub.pos.services.BillService
+import com.routehub.pos.services.ConfigService
 import com.routehub.pos.services.PropertiesService
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -61,12 +63,14 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
     val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
     val billsService = ApiClient.retrofit.create(BillService::class.java)
+    val configService = ApiClient.retrofit.create(ConfigService::class.java)
 
     private val REQUEST_CODE_PAY = 10016
     private val REQUEST_CODE_PRINT_RECEIPT = 10028
 //    private var googleMap: GoogleMap? = null
 
     var reasons: List<Reason>? = null;
+    var showRejection: Boolean? = false;
 
     private var dueList: List<DueItem> = emptyList()
 
@@ -144,6 +148,26 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
 
         super.onCreate(savedInstanceState)
+
+        // fetch configurations
+        val showRejectionConfig = configService.getConfig("allow-bill-rejection").enqueue(object : Callback<ApiObjectResponse<Any>> {
+            override fun onResponse(
+                call: Call<ApiObjectResponse<Any>?>,
+                response: Response<ApiObjectResponse<Any>?>
+            ) {
+                // TODO: replace with actual code;
+                // showRejection = response.body()?.data?.get("value")?.asBoolean
+            }
+
+            override fun onFailure(
+                call: Call<ApiObjectResponse<Any>?>,
+                t: Throwable
+            ) {
+                TODO("Not yet implemented")
+            }
+
+
+        })
 
         setContentView(R.layout.activity_property_details)
 
@@ -310,6 +334,12 @@ class PropertyDetailsActivity : AppCompatActivity() {
         }
 
         val btnReject = findViewById<Button>(R.id.btnRejectPayment)
+
+        if(showRejection) {
+            btnReject.visibility = View.VISIBLE
+        } else {
+            btnReject.visibility = View.GONE
+        }
 
         btnReject.setOnClickListener {
             val bottomSheet = PaymentFailureBottomSheet { reason, remarks ->
