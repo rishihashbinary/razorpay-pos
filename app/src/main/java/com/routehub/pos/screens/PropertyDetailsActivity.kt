@@ -387,12 +387,11 @@ class PropertyDetailsActivity : AppCompatActivity() {
         }
 
         btnReprintReceipt.setOnClickListener {
-            MixpanelManager.track("Reprint Receipt Clicked")
             reprintReceipt()
         }
 
         btnBack.setOnClickListener {
-            MixpanelManager.track("Back Button Clicked")
+            MixpanelManager.track("Back button clicked from collection.")
             navigateToHome()
         }
 
@@ -628,6 +627,8 @@ class PropertyDetailsActivity : AppCompatActivity() {
             Toast.makeText(this, "No receipt available to reprint.", Toast.LENGTH_SHORT).show()
             return
         }
+
+        MixpanelManager.track("Reprint receipt clicked", duplicateReceipt)
 
         ReceiptPrintHelper.printReceipt(this, duplicateReceipt, object : PrintCallback {
             override fun onSuccess() {
