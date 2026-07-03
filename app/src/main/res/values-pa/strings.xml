@@ -46,4 +46,6 @@
     <string name="search_property_onboarding">ਮਾਲਕ ਦੇ ਰਜਿਸਟਰਡ ਮੋਬਾਈਲ ਨੰਬਰ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਜਾਇਦਾਦ ਖੋਜੋ।</string>
     <string name="add_manually">ਖੁਦ ਸ਼ਾਮਲ ਕਰੋ</string>
     <string name="add_property_onboarding">ਜੇ ਕੋਈ ਜਾਇਦਾਦ QR ਜਾਂ ਮੋਬਾਈਲ ਨੰਬਰ ਰਾਹੀਂ ਨਹੀਂ ਮਿਲਦੀ, ਤਾਂ ਉਸਨੂੰ ਇੱਥੇ ਸ਼ਾਮਲ ਕਰੋ।</string>
+    <string name="reprint_receipt">ਰਸੀਦ ਦੁਬਾਰਾ ਪ੍ਰਿੰਟ ਕਰੋ</string>
+    <string name="back">ਵਾਪਸ</string>
 </resources>

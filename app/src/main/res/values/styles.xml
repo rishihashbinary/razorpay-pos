@@ -13,4 +13,14 @@
         <item name="backgroundTint">@color/danger</item>
         <item name="android:textColor">@android:color/white</item>
     </style>
+
+    <style name="Button.Success" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/green_700</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="Button.Secondary" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/gray_700</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
 </resources>
