@@ -46,4 +46,6 @@
     <string name="search_property_onboarding">मालिक के पंजीकृत मोबाइल नंबर का उपयोग करके संपत्ति खोजें।</string>
     <string name="add_manually">मैन्युअल रूप से जोड़ें</string>
     <string name="add_property_onboarding">अगर कोई संपत्ति QR या मोबाइल नंबर से नहीं मिलती है, तो उसे यहाँ जोड़ें।</string>
+    <string name="reprint_receipt">रसीद पुनः प्रिंट करें</string>
+    <string name="back">वापस</string>
 </resources>

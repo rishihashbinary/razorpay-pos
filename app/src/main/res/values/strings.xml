@@ -46,4 +46,6 @@
     <string name="search_property_onboarding">Search a property using the owner\'s registered mobile number.</string>
     <string name="add_manually">Add Manually</string>
     <string name="add_property_onboarding">If a property isn\'t found via QR or mobile number, add it here.</string>
+    <string name="reprint_receipt">REPRINT RECEIPT</string>
+    <string name="back">BACK</string>
 </resources>

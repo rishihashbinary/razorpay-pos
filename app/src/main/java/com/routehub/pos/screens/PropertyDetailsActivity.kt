@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import android.view.View
 import com.eze.api.EzeAPI
 import com.google.gson.Gson
 import com.routehub.pos.PrintCallback
@@ -56,8 +57,13 @@ class PropertyDetailsActivity : AppCompatActivity() {
     var hasLocation: Boolean = false;
     private lateinit var locationHelper: LocationHelper
     lateinit var btnPayment: Button
+    lateinit var btnRejectPayment: Button
+    lateinit var btnReprintReceipt: Button
+    lateinit var btnBack: Button
     lateinit var txtMessage: TextView
     lateinit var txtFee: TextView
+
+    private var lastReceiptData: ReceiptData? = null
 
     val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
     val billsService = ApiClient.retrofit.create(BillService::class.java)
@@ -164,6 +170,9 @@ class PropertyDetailsActivity : AppCompatActivity() {
         txtFee = findViewById<TextView>(R.id.txtFee)
         txtMessage = findViewById<TextView>(R.id.txtMessage)
         btnPayment = findViewById<Button>(R.id.btnPayment)
+        btnRejectPayment = findViewById<Button>(R.id.btnRejectPayment)
+        btnReprintReceipt = findViewById<Button>(R.id.btnReprintReceipt)
+        btnBack = findViewById<Button>(R.id.btnBack)
 
         //         Step 1: Check permission
         if (!locationHelper.hasLocationPermission()) {
@@ -376,6 +385,16 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
             bottomSheet.show(supportFragmentManager, "PaymentFailure")
         }
+
+        btnReprintReceipt.setOnClickListener {
+            reprintReceipt()
+        }
+
+        btnBack.setOnClickListener {
+            MixpanelManager.track("Back button clicked from collection.")
+            navigateToHome()
+        }
+
         fetchBills()
     }
 
@@ -524,22 +543,28 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     customerPhone = property?.mobileNo,
                     receiptDate = DateHelper.getReadableDate(receipt?.receiptDate)
                 )
+                lastReceiptData = receiptData
 //                MixpanelManager.track("Initiating Print.", receiptData)
                 ReceiptPrintHelper.printReceipt(this, receiptData, object : PrintCallback {
                     override fun onSuccess() {
                         MixpanelManager.track("Print Success")
-                        navigateToHome()
+                        showPostPaymentActions()
                     }
 
                     override fun onError(error: String?) {
                         val props = JSONObject()
                         props.put("errorMessage", error ?: "Unknown Error")
                         MixpanelManager.track("Print Failed", props)
+                        Toast.makeText(
+                            this@PropertyDetailsActivity,
+                            "Receipt print failed. You can retry from Reprint Receipt.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        showPostPaymentActions()
                     }
 
                 });
 //                MixpanelManager.track("Sent to Printer")
-//                navigateToHome()
             } else {
                 MixpanelManager.track("Payment Failed", paymentResult)
             }
@@ -587,6 +612,40 @@ class PropertyDetailsActivity : AppCompatActivity() {
     fun navigateToHome() {
         val intent = Intent(this, HomeActivity::class.java)
         startActivity(intent)
+    }
+
+    private fun showPostPaymentActions() {
+        btnPayment.visibility = View.GONE
+        btnRejectPayment.visibility = View.GONE
+        btnReprintReceipt.visibility = View.VISIBLE
+        btnBack.visibility = View.VISIBLE
+    }
+
+    private fun reprintReceipt() {
+        val duplicateReceipt = lastReceiptData?.copy(isDuplicate = true)
+        if (duplicateReceipt == null) {
+            Toast.makeText(this, "No receipt available to reprint.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        MixpanelManager.track("Reprint receipt clicked", duplicateReceipt)
+
+        ReceiptPrintHelper.printReceipt(this, duplicateReceipt, object : PrintCallback {
+            override fun onSuccess() {
+                MixpanelManager.track("Reprint Success")
+            }
+
+            override fun onError(error: String?) {
+                val props = JSONObject()
+                props.put("errorMessage", error ?: "Unknown Error")
+                MixpanelManager.track("Reprint Failed", props)
+                Toast.makeText(
+                    this@PropertyDetailsActivity,
+                    "Reprint failed: ${error ?: "Unknown error"}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        })
     }
 
     private val dueLauncher = registerForActivityResult(
