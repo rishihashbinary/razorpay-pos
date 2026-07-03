@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import android.view.View
 import com.eze.api.EzeAPI
 import com.google.gson.Gson
 import com.routehub.pos.PrintCallback
