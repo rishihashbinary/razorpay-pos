@@ -21,6 +21,7 @@ import com.routehub.pos.R
 import com.routehub.pos.analytics.AnalyticsTracker
 import com.routehub.pos.analytics.MixpanelManager
 import com.routehub.pos.clients.ApiClient
+import com.routehub.pos.clients.FeatureFlagManager
 import com.routehub.pos.clients.SessionManager
 import com.routehub.pos.helpers.DateHelper
 import com.routehub.pos.helpers.LocationHelper
@@ -42,7 +43,6 @@ import com.routehub.pos.payments.PaymentLauncher
 import com.routehub.pos.screens.dues.DueSelectionActivity
 import com.routehub.pos.screens.payment.PaymentFailureBottomSheet
 import com.routehub.pos.services.BillService
-import com.routehub.pos.services.ConfigService
 import com.routehub.pos.services.PropertiesService
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -68,14 +68,12 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
     val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
     val billsService = ApiClient.retrofit.create(BillService::class.java)
-    val configService = ApiClient.retrofit.create(ConfigService::class.java)
 
     private val REQUEST_CODE_PAY = 10016
     private val REQUEST_CODE_PRINT_RECEIPT = 10028
 //    private var googleMap: GoogleMap? = null
 
     var reasons: List<Reason>? = null;
-    var showRejection: Boolean? = false;
 
     private var dueList: List<DueItem> = emptyList()
 
@@ -154,25 +152,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
-        // fetch configurations
-        val showRejectionConfig = configService.getConfig("allow-bill-rejection").enqueue(object : Callback<ApiObjectResponse<Any>> {
-            override fun onResponse(
-                call: Call<ApiObjectResponse<Any>?>,
-                response: Response<ApiObjectResponse<Any>?>
-            ) {
-                // TODO: replace with actual code;
-                // showRejection = response.body()?.data?.get("value")?.asBoolean
-            }
 
-            override fun onFailure(
-                call: Call<ApiObjectResponse<Any>?>,
-                t: Throwable
-            ) {
-                TODO("Not yet implemented")
-            }
-
-
-        })
 
         setContentView(R.layout.activity_property_details)
 
@@ -343,7 +323,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
         val btnReject = findViewById<Button>(R.id.btnRejectPayment)
 
-        if(showRejection) {
+        if (FeatureFlagManager.allowBillRejection) {
             btnReject.visibility = View.VISIBLE
         } else {
             btnReject.visibility = View.GONE
@@ -646,7 +626,8 @@ class PropertyDetailsActivity : AppCompatActivity() {
     private fun showPostPaymentActions() {
         btnPayment.visibility = View.GONE
         btnRejectPayment.visibility = View.GONE
-        btnReprintReceipt.visibility = View.VISIBLE
+        btnReprintReceipt.visibility =
+            if (FeatureFlagManager.allowReceiptReprint) View.VISIBLE else View.GONE
         btnBack.visibility = View.VISIBLE
     }
 

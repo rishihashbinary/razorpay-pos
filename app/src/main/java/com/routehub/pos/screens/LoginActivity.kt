@@ -26,6 +26,8 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
+import com.routehub.pos.clients.FeatureFlagManager
+import com.routehub.pos.services.ConfigService
 import retrofit2.Response
 
 class LoginActivity : AppCompatActivity() {
@@ -34,6 +36,8 @@ class LoginActivity : AppCompatActivity() {
     private val propertyService = ApiClient.retrofit.create(PropertiesService::class.java)
     private val zoneService = ApiClient.retrofit.create(ZoneService::class.java)
     private val wardService = ApiClient.retrofit.create(WardService::class.java)
+
+    private val configService = ApiClient.retrofit.create(ConfigService::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +82,7 @@ class LoginActivity : AppCompatActivity() {
                         SessionManager.setToken(token);
                         SessionManager.setUserId(userId)
                         MixpanelManager.track("Login Success", request)
+                        FeatureFlagManager.refresh(configService)
                         lifecycleScope.launch {
                             try {
                                 preloadMasterData()
