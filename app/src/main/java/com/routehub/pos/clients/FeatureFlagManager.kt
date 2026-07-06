@@ -44,7 +44,6 @@ object FeatureFlagManager {
                     return
                 }
 
-                // `status` is intentionally ignored — only data.value decides the outcome.
                 val rawValue = response.body()?.data?.value
                 val enabled = rawValue?.trim()?.equals("true", ignoreCase = true) == true
                 Log.d(TAG, "Config '$key' resolved to $enabled (raw='$rawValue')")
