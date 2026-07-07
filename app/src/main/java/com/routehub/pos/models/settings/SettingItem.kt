@@ -9,5 +9,6 @@ data class SettingItem(
 
 enum class SettingType {
     LANGUAGE,
+    LOGOUT,
     OTHER
 }

@@ -2,7 +2,7 @@
 
 import android.content.Intent
 import android.os.Bundle
-import android.se.omapi.Session
+import com.routehub.pos.utils.Session
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
@@ -37,6 +37,15 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Router/splash check: a valid persisted session skips Login entirely.
+        if (Session.isLoggedIn()) {
+            navigateToHomeAndFinish()
+            return
+        }
+
+        Log.d("MainActivity", "initializing MixPanel")
+        MixpanelManager.initialize(this,  "33f0937bb8ec54f0a6b39d404275ffd1")
 
         Log.d("MainActivity", "initializing MixPanel")
         MixpanelManager.initialize(this,  "33f0937bb8ec54f0a6b39d404275ffd1")
@@ -81,7 +90,7 @@ class LoginActivity : AppCompatActivity() {
                         lifecycleScope.launch {
                             try {
                                 preloadMasterData()
-                                startActivity(Intent(this@LoginActivity, HomeActivity::class.java))
+                                navigateToHomeAndFinish()
                             } catch (e: Exception) {
                                 Toast.makeText(this@LoginActivity, "Failed to load app data", Toast.LENGTH_SHORT).show()
                                 e.printStackTrace()
@@ -112,6 +121,13 @@ class LoginActivity : AppCompatActivity() {
 //                Toast.makeText(this, "Invalid credentials", Toast.LENGTH_SHORT).show()
 //            }
         }
+    }
+
+    private fun navigateToHomeAndFinish() {
+        val intent = Intent(this, HomeActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     private suspend fun preloadMasterData() = withContext(Dispatchers.IO) {

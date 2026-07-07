@@ -343,7 +343,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
         val btnReject = findViewById<Button>(R.id.btnRejectPayment)
 
-        if(showRejection) {
+        if(this.showRejection == true) {
             btnReject.visibility = View.VISIBLE
         } else {
             btnReject.visibility = View.GONE
