@@ -49,9 +49,9 @@
     <string name="reprint_receipt">ਰਸੀਦ ਦੁਬਾਰਾ ਪ੍ਰਿੰਟ ਕਰੋ</string>
     <string name="back">ਵਾਪਸ</string>
     <string name="exit_confirmation_title">ਬਾਹਰ ਜਾਓ</string>
-    <string name="exit_confirmation_message">ਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਤੌਰ &apos;ਤੇ ਬਾਹਰ ਜਾਣਾ ਚਾਹੁੰਦੇ ਹੋ?</string>
+    <string name="exit_confirmation_message">ਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਤੌਰ \'ਤੇ ਬਾਹਰ ਜਾਣਾ ਚਾਹੁੰਦੇ ਹੋ?</string>
     <string name="exit">ਬਾਹਰ ਜਾਓ</string>
     <string name="cancel">ਰੱਦ ਕਰੋ</string>
     <string name="logout">ਲੌਗ ਆਉਟ</string>
-    <string name="logout_confirmation_message">ਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਤੌਰ &apos;ਤੇ ਲੌਗ ਆਉਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</string>
+    <string name="logout_confirmation_message">ਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਤੌਰ \'ਤੇ ਲੌਗ ਆਉਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</string>
 </resources>
