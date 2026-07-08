@@ -358,7 +358,7 @@ class NewPropertyActivity : AppCompatActivity() {
         integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE)
         integrator.setPrompt("Scan Property QR Code")
         integrator.setBeepEnabled(true)
-        integrator.setOrientationLocked(false)
+        integrator.setOrientationLocked(true)
 
         integrator.initiateScan()
 
