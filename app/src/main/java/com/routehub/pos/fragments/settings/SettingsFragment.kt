@@ -1,6 +1,8 @@
 package com.routehub.pos.fragments.settings
 
 import android.content.Intent
+import com.routehub.pos.screens.LoginActivity
+import com.routehub.pos.utils.Session
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -39,17 +41,23 @@ class SettingsFragment : Fragment() {
                 title = getString(R.string.change_language),
                 summary = getCurrentLanguage(),
                 type = SettingType.LANGUAGE
+            ),
+            SettingItem(
+                id = "logout",
+                title = getString(R.string.logout),
+                summary = "",
+                type = SettingType.LOGOUT
             )
         )
 
         recycler.layoutManager = LinearLayoutManager(requireContext())
 
         recycler.adapter = SettingsAdapter(settingsList) { item ->
-
             if (item.id == "language") {
                 showLanguageDialog()
+            } else if (item.id == "logout") {
+                showLogoutConfirmation()
             }
-
         }
 
         return view
@@ -85,6 +93,20 @@ class SettingsFragment : Fragment() {
         val intent = Intent(requireContext(), HomeActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         startActivity(intent)
+    }
+
+    private fun showLogoutConfirmation() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.logout))
+            .setMessage(getString(R.string.logout_confirmation_message))
+            .setPositiveButton(getString(R.string.logout)) { _, _ ->
+                Session.clear()
+                val intent = Intent(requireContext(), LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .show()
     }
 
     private fun getCurrentLanguage(): String {
