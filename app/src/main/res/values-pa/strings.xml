@@ -48,4 +48,10 @@
     <string name="add_property_onboarding">ਜੇ ਕੋਈ ਜਾਇਦਾਦ QR ਜਾਂ ਮੋਬਾਈਲ ਨੰਬਰ ਰਾਹੀਂ ਨਹੀਂ ਮਿਲਦੀ, ਤਾਂ ਉਸਨੂੰ ਇੱਥੇ ਸ਼ਾਮਲ ਕਰੋ।</string>
     <string name="reprint_receipt">ਰਸੀਦ ਦੁਬਾਰਾ ਪ੍ਰਿੰਟ ਕਰੋ</string>
     <string name="back">ਵਾਪਸ</string>
+    <string name="exit_confirmation_title">ਬਾਹਰ ਜਾਓ</string>
+    <string name="exit_confirmation_message">ਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਤੌਰ \'ਤੇ ਬਾਹਰ ਜਾਣਾ ਚਾਹੁੰਦੇ ਹੋ?</string>
+    <string name="exit">ਬਾਹਰ ਜਾਓ</string>
+    <string name="cancel">ਰੱਦ ਕਰੋ</string>
+    <string name="logout">ਲੌਗ ਆਉਟ</string>
+    <string name="logout_confirmation_message">ਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਤੌਰ \'ਤੇ ਲੌਗ ਆਉਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</string>
 </resources>

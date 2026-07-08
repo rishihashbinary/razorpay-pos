@@ -48,4 +48,10 @@
     <string name="add_property_onboarding">If a property isn\'t found via QR or mobile number, add it here.</string>
     <string name="reprint_receipt">REPRINT RECEIPT</string>
     <string name="back">BACK</string>
+    <string name="exit_confirmation_title">Exit</string>
+    <string name="exit_confirmation_message">Are you sure you want to exit?</string>
+    <string name="exit">Exit</string>
+    <string name="cancel">Cancel</string>
+    <string name="logout">Logout</string>
+    <string name="logout_confirmation_message">Are you sure you want to logout?</string>
 </resources>
