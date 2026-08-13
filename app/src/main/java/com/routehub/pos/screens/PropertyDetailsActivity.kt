@@ -25,6 +25,7 @@ import com.routehub.pos.clients.FeatureFlagManager
 import com.routehub.pos.clients.SessionManager
 import com.routehub.pos.helpers.DateHelper
 import com.routehub.pos.helpers.LocationHelper
+import com.routehub.pos.evidence.EvidenceLocationTracker
 import com.routehub.pos.helpers.PlayHelper
 import com.routehub.pos.helpers.ReceiptPrintHelper
 import com.routehub.pos.models.CollectionPeriod
@@ -57,6 +58,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
     var property: Property? = null
     var hasLocation: Boolean = false;
     private lateinit var locationHelper: LocationHelper
+    private lateinit var evidenceLocationTracker: EvidenceLocationTracker
     lateinit var btnPayment: Button
     lateinit var btnRejectPayment: Button
     lateinit var btnReprintReceipt: Button
@@ -137,6 +139,8 @@ class PropertyDetailsActivity : AppCompatActivity() {
         }
 
         locationHelper = LocationHelper(this)
+        evidenceLocationTracker = EvidenceLocationTracker(this)
+        evidenceLocationTracker.start()
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED) {
@@ -426,6 +430,11 @@ class PropertyDetailsActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        evidenceLocationTracker.stop()
+    }
+
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
@@ -588,6 +597,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        evidenceLocationTracker.start()
 
         if (requestCode == LocationHelper.LOCATION_PERMISSION_REQUEST_CODE &&
             grantResults.isNotEmpty() &&
