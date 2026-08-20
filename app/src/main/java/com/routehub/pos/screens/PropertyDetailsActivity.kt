@@ -345,9 +345,6 @@ class PropertyDetailsActivity : AppCompatActivity() {
                 val reason = evidence.reasonCode
                 val remarks = evidence.remarks ?: ""
 
-                // Persist the full bundle to the offline queue right away -
-                // survives process death/reboot. Phase 7 wires up the actual
-                // upload; this just makes sure nothing is lost until then.
                 DenialEvidenceQueue.enqueue(this, evidence)
                 DenialEvidenceUploadScheduler.triggerNow(this)
 
