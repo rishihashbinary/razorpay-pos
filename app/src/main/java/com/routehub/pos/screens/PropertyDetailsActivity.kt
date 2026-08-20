@@ -25,6 +25,10 @@ import com.routehub.pos.clients.FeatureFlagManager
 import com.routehub.pos.clients.SessionManager
 import com.routehub.pos.helpers.DateHelper
 import com.routehub.pos.helpers.LocationHelper
+import com.routehub.pos.evidence.EvidenceLocationTracker
+import com.routehub.pos.evidence.CapabilityProbe
+import com.routehub.pos.evidence.DenialEvidenceQueue
+import com.routehub.pos.evidence.DenialEvidenceUploadScheduler
 import com.routehub.pos.helpers.PlayHelper
 import com.routehub.pos.helpers.ReceiptPrintHelper
 import com.routehub.pos.models.CollectionPeriod
@@ -57,6 +61,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
     var property: Property? = null
     var hasLocation: Boolean = false;
     private lateinit var locationHelper: LocationHelper
+    private lateinit var evidenceLocationTracker: EvidenceLocationTracker
     lateinit var btnPayment: Button
     lateinit var btnRejectPayment: Button
     lateinit var btnReprintReceipt: Button
@@ -137,6 +142,8 @@ class PropertyDetailsActivity : AppCompatActivity() {
         }
 
         locationHelper = LocationHelper(this)
+        evidenceLocationTracker = EvidenceLocationTracker(this)
+        evidenceLocationTracker.start()
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED) {
@@ -330,7 +337,16 @@ class PropertyDetailsActivity : AppCompatActivity() {
         }
 
         btnReject.setOnClickListener {
-            val bottomSheet = PaymentFailureBottomSheet { reason, remarks ->
+            val bottomSheet = PaymentFailureBottomSheet(
+                evidenceLocationTracker,
+                CapabilityProbe.resolve(this)
+            ) { evidence ->
+
+                val reason = evidence.reasonCode
+                val remarks = evidence.remarks ?: ""
+
+                DenialEvidenceQueue.enqueue(this, evidence)
+                DenialEvidenceUploadScheduler.triggerNow(this)
 
                 MixpanelManager.track(
                     "Payment Rejected", mapOf(
@@ -424,6 +440,11 @@ class PropertyDetailsActivity : AppCompatActivity() {
                 println("Unable to fetch location")
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        evidenceLocationTracker.stop()
     }
 
     override fun onActivityResult(
@@ -588,6 +609,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        evidenceLocationTracker.start()
 
         if (requestCode == LocationHelper.LOCATION_PERMISSION_REQUEST_CODE &&
             grantResults.isNotEmpty() &&

@@ -27,6 +27,7 @@ import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import com.routehub.pos.clients.FeatureFlagManager
+import com.routehub.pos.evidence.CapabilityProbe
 import com.routehub.pos.services.ConfigService
 import retrofit2.Response
 
@@ -92,6 +93,7 @@ class LoginActivity : AppCompatActivity() {
                         SessionManager.setUserId(userId)
                         MixpanelManager.track("Login Success", request)
                         FeatureFlagManager.refresh(configService)
+                        CapabilityProbe.resolve(this@LoginActivity)
                         lifecycleScope.launch {
                             try {
                                 preloadMasterData()
