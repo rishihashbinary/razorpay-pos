@@ -31,17 +31,6 @@ data class RadioFingerprint(
     val capturedAtMs: Long
 )
 
-/**
- * Captures a snapshot of the visible radio environment (cell towers + WiFi
- * networks) at denial time. Used server-side as an anti-spoof cross-check
- * against a per-property baseline learned over repeated visits - a denial
- * whose radio fingerprint doesn't match, even when GPS claims on-site, is
- * the mock-GPS tell.
- *
- * Fail-closed: any read failure (missing permission, radio off, exception)
- * yields an empty list for that source rather than throwing. A fingerprint
- * with nothing observed is still shipped - the manifest explains why.
- */
 object RadioFingerprintCapture {
 
     fun capture(context: Context): RadioFingerprint {
@@ -97,9 +86,6 @@ object RadioFingerprintCapture {
                     isRegistered = cellInfo.isRegistered
                 )
                 else -> CellObservation(
-                    // Covers CellInfoNr (5G, API 29+) and any future type -
-                    // recorded generically rather than skipped, since even
-                    // "a cell of some type was visible" has anti-spoof value.
                     cellId = null,
                     type = cellInfo.javaClass.simpleName,
                     signalStrengthDbm = null,
@@ -129,9 +115,6 @@ object RadioFingerprintCapture {
 
             if (!wifiManager.isWifiEnabled) return emptyList()
 
-            // Reads the most recent scan the OS already has cached, rather than
-            // triggering a new one - startScan() is throttled/deprecated on
-            // modern Android, and a recent cached scan is fine for a fingerprint.
             val results = wifiManager.scanResults ?: return emptyList()
             results.map { result ->
                 WifiObservation(

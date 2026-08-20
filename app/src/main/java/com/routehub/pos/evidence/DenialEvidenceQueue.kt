@@ -14,21 +14,6 @@ data class QueuedDenialEvidence(
     val lastAttemptAtMs: Long? = null
 )
 
-/**
- * File-backed persistent queue for denial evidence. Survives process death
- * and device reboot - the queue file and all referenced media live in
- * app-private internal storage.
- *
- * Room was the other option per spec; file-backed JSON was chosen instead
- * since this project has no Room/KSP setup yet, and the realistic queue
- * size on a single terminal is small (a handful of pending items at most) -
- * a JSON list is simple, needs zero new dependencies (Gson is already used
- * throughout this app), and is entirely sufficient at this scale.
- *
- * All reads/writes are synchronized through a single queue file, so callers
- * don't need to worry about concurrent access from the UI thread and a
- * background upload worker (Phase 7) at the same time.
- */
 object DenialEvidenceQueue {
 
     private const val QUEUE_FILE_NAME = "denial_evidence_queue.json"
@@ -51,8 +36,6 @@ object DenialEvidenceQueue {
     fun getPendingCount(context: Context): Int {
         return getPending(context).size
     }
-
-    /** Marks an item uploaded. Does NOT delete media - call purgeUploaded separately, only after confirmed server success. */
     @Synchronized
     fun markUploaded(context: Context, clientTransactionId: String) {
         val queue = readQueue(context)
@@ -78,12 +61,6 @@ object DenialEvidenceQueue {
         }.toMutableList()
         writeQueue(context, updated)
     }
-
-    /**
-     * Deletes an uploaded item's local record AND its media files. Only ever
-     * call this after the server has confirmed receipt - never on a timer,
-     * never speculatively. Un-uploaded evidence must never auto-expire.
-     */
     @Synchronized
     fun purgeUploaded(context: Context, clientTransactionId: String) {
         val queue = readQueue(context)
@@ -93,8 +70,6 @@ object DenialEvidenceQueue {
                 try {
                     File(path).delete()
                 } catch (e: Exception) {
-                    // best-effort cleanup - a leftover file is harmless, an
-                    // un-uploaded queue entry being wrongly removed is not
                 }
             }
         }
@@ -111,9 +86,6 @@ object DenialEvidenceQueue {
                 gson.fromJson<MutableList<QueuedDenialEvidence>>(reader, listType) ?: mutableListOf()
             }
         } catch (e: Exception) {
-            // Corrupted queue file - fail safe to an empty in-memory queue
-            // rather than crashing every launch. This does not delete any
-            // media files already on disk, only resets the index.
             mutableListOf()
         }
     }
@@ -124,8 +96,6 @@ object DenialEvidenceQueue {
                 gson.toJson(queue, listType, writer)
             }
         } catch (e: Exception) {
-            // Best-effort persistence - the item is still in this session's
-            // in-memory flow even if the disk write failed.
         }
     }
 

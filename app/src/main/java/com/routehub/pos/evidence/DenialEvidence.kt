@@ -21,11 +21,7 @@ data class MediaItem(
     val capturedReason: CapturedAbsenceReason?
 )
 
-/**
- * The full evidence bundle shipped for a single denial, keyed by a
- * device-generated clientTransactionId. This is the exact shape the server
- * expects in POST /denial-evidence (Phase 7's job to actually send it).
- */
+
 data class DenialEvidence(
     val clientTransactionId: String,
     val reasonCode: String,
@@ -42,8 +38,6 @@ data class DenialEvidence(
     val createdAtMs: Long
 )
 
-/** fixAgeMs is frozen here, at bundle-creation time - not recomputed later,
- *  since this bundle may sit in the offline queue for a while before upload. */
 fun EvidenceLocationTracker.LocationFix.toGeoFix(): GeoFix = GeoFix(
     latitude = latitude,
     longitude = longitude,

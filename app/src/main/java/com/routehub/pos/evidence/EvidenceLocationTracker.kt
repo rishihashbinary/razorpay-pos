@@ -19,7 +19,6 @@ class EvidenceLocationTracker(private val context: Context) {
         val isMock: Boolean,
         val fixTimestamp: Long
     ) {
-        /** Age of this fix relative to now, in milliseconds. Computed at read time. */
         fun ageMs(): Long = System.currentTimeMillis() - fixTimestamp
     }
 
@@ -72,7 +71,6 @@ class EvidenceLocationTracker(private val context: Context) {
         try {
             locationManager?.removeUpdates(listener)
         } catch (e: SecurityException) {
-            // Already lost permission - nothing to clean up.
         }
         isTracking = false
     }
@@ -116,7 +114,6 @@ class EvidenceLocationTracker(private val context: Context) {
                 }
             }
         } catch (e: SecurityException) {
-            // No permission - nothing to seed with.
         }
     }
 
@@ -127,8 +124,8 @@ class EvidenceLocationTracker(private val context: Context) {
     }
 
     companion object {
-        private const val MIN_UPDATE_INTERVAL_MS = 5000L   // 5s between fixes
-        private const val MIN_UPDATE_DISTANCE_M = 5f        // or 5m of movement
-        private const val MAX_TRACK_SIZE = 20                // cap the in-memory track
+        private const val MIN_UPDATE_INTERVAL_MS = 5000L
+        private const val MIN_UPDATE_DISTANCE_M = 5f
+        private const val MAX_TRACK_SIZE = 20
     }
 }

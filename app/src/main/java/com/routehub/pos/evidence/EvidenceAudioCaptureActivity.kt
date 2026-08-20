@@ -21,17 +21,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * In-app voice-note capture for denial evidence. Recording starts
- * immediately on launch - consent was already gathered by the caller (the
- * "Consent & record" tap gate) before this screen ever opens.
- *
- * AAC/m4a via MediaRecorder, 30-second hard cap with auto-stop.
- *
- * Result contract:
- *   RESULT_OK + EXTRA_AUDIO_PATH + EXTRA_AUDIO_DURATION_SECONDS -> saved file
- *   RESULT_CANCELED -> permission denied, or recorder failed to start/finish
- */
 class EvidenceAudioCaptureActivity : AppCompatActivity() {
 
     private var recorder: MediaRecorder? = null
@@ -66,7 +55,6 @@ class EvidenceAudioCaptureActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                // Backing out mid-recording discards the take rather than silently keeping it.
                 discardAndCancel()
             }
         })
@@ -98,7 +86,6 @@ class EvidenceAudioCaptureActivity : AppCompatActivity() {
 
                 setOnInfoListener { _, what, _ ->
                     if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
-                        // Native hard cap hit - finalize exactly as if the operator tapped stop.
                         runOnUiThread { finishRecording() }
                     }
                 }
@@ -138,8 +125,6 @@ class EvidenceAudioCaptureActivity : AppCompatActivity() {
 
             override fun onFinish() {
                 elapsedSeconds = MAX_DURATION_SECONDS
-                // MediaRecorder's own max-duration listener handles the actual stop;
-                // this is just the UI tick reaching the end.
             }
         }.start()
     }
@@ -155,8 +140,6 @@ class EvidenceAudioCaptureActivity : AppCompatActivity() {
                 release()
             }
         } catch (e: Exception) {
-            // stop() can throw if called too soon after start() with near-zero audio -
-            // treat as a failed capture rather than crashing.
             Log.e(TAG, "Recorder stop failed", e)
             recorder = null
             cleanupFailedFile()
@@ -188,7 +171,6 @@ class EvidenceAudioCaptureActivity : AppCompatActivity() {
             try {
                 recorder?.apply { stop(); release() }
             } catch (e: Exception) {
-                // ignore - we're discarding anyway
             }
         }
         recorder = null
@@ -202,7 +184,6 @@ class EvidenceAudioCaptureActivity : AppCompatActivity() {
         try {
             recorder?.release()
         } catch (e: Exception) {
-            // already in a bad state - nothing more to do
         }
         recorder = null
         outputFile?.let { if (it.exists()) it.delete() }
@@ -221,7 +202,6 @@ class EvidenceAudioCaptureActivity : AppCompatActivity() {
             try {
                 recorder?.release()
             } catch (e: Exception) {
-                // already stopped/released or in a bad state
             }
         }
     }

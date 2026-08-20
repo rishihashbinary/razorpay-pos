@@ -11,19 +11,6 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 
-/**
- * Uploads all pending denial-evidence bundles to POST /denial-evidence.
- * Runs both as a one-time request (fired right after a denial is recorded,
- * for fast delivery when network is already up) and as a periodic
- * safety-net (in case the one-time attempt never got a chance to run - app
- * killed, offline at submission time, etc). See DenialEvidenceUploadScheduler.
- *
- * Idempotent on clientTransactionId - the server is responsible for treating
- * a duplicate upload as a no-op (returns the existing record). This worker
- * only ever acts on items still in the local PENDING queue, so a normal run
- * never re-sends anything already purged - a genuine double-send is safe by
- * design either way, per the server contract.
- */
 class DenialEvidenceUploadWorker(
     context: Context,
     params: WorkerParameters
@@ -49,17 +36,11 @@ class DenialEvidenceUploadWorker(
             }
 
             if (success) {
-                // Purge only on confirmed server success - never on a timer,
-                // never speculatively. Un-uploaded evidence is the proof.
                 DenialEvidenceQueue.purgeUploaded(applicationContext, evidence.clientTransactionId)
             } else {
                 anyFailure = true
             }
         }
-
-        // WorkManager's own retry/backoff policy (configured where this
-        // worker is enqueued) governs re-attempts - this just reports
-        // whether everything in this pass succeeded.
         return if (anyFailure) Result.retry() else Result.success()
     }
 
@@ -86,14 +67,6 @@ class DenialEvidenceUploadWorker(
         val requestBody = file.asRequestBody(mimeType.toMediaTypeOrNull())
         return MultipartBody.Part.createFormData(fieldName, file.name, requestBody)
     }
-
-    /**
-     * The JSON envelope sent alongside the binary parts. Deliberately omits
-     * local filePath (meaningless to the server) - media presence is
-     * conveyed by the separate "photo"/"audio" multipart parts themselves,
-     * plus a "present" flag here for cases where a slot legitimately has no
-     * file (capturedReason explains why).
-     */
     private fun buildEnvelopeJson(evidence: DenialEvidence): String {
         val envelopeMedia = evidence.media.map { item ->
             mapOf(

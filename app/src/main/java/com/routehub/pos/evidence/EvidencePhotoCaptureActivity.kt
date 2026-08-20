@@ -27,17 +27,6 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-/**
- * In-app photo capture for denial evidence. Deliberately never uses an
- * intent (ACTION_IMAGE_CAPTURE) - a locked-down PAX terminal has no camera
- * app installed to satisfy one. Uses CameraX with whichever camera the
- * device actually has, since the capability probe already confirmed
- * hardware presence before this screen was ever launched.
- *
- * Result contract:
- *   RESULT_OK + EXTRA_PHOTO_PATH -> absolute path of the saved, downscaled JPEG
- *   RESULT_CANCELED -> user backed out, no camera, or permission denied
- */
 class EvidencePhotoCaptureActivity : AppCompatActivity() {
 
     private lateinit var previewView: PreviewView
@@ -95,8 +84,6 @@ class EvidencePhotoCaptureActivity : AppCompatActivity() {
                 imageCapture = ImageCapture.Builder()
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     .build()
-
-                // Whichever camera the device actually has - prefer back, fall back to front.
                 val cameraSelector = when {
                     cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA) -> CameraSelector.DEFAULT_BACK_CAMERA
                     cameraProvider.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA) -> CameraSelector.DEFAULT_FRONT_CAMERA
@@ -168,13 +155,6 @@ class EvidencePhotoCaptureActivity : AppCompatActivity() {
             }
         )
     }
-
-    /**
-     * Downscales to a reasonable max dimension and re-compresses to JPEG at
-     * moderate quality, so evidence photos don't bloat the upload queue on
-     * a field terminal's intermittent LTE. Saved into app-private internal
-     * storage, never the public gallery - this is sensitive personal data.
-     */
     private fun downscaleAndCompress(rawFile: File): File? {
         return try {
             val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }

@@ -12,16 +12,6 @@ import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import java.util.concurrent.TimeUnit
 
-/**
- * Schedules DenialEvidenceUploadWorker.
- *
- * - triggerNow(): fired right after a denial is enqueued, for fast delivery
- *   when the network is already up.
- * - schedulePeriodic(): a safety net registered once per app launch, in
- *   case triggerNow() never got the chance to run (app killed, offline at
- *   submission time, etc). Safe to call on every launch - WorkManager
- *   de-dupes by unique work name via KEEP.
- */
 object DenialEvidenceUploadScheduler {
 
     private const val ONE_TIME_WORK_NAME = "denial_evidence_upload_now"

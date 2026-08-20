@@ -192,12 +192,6 @@ class PaymentFailureBottomSheet(
             }
         });
     }
-
-    // -------------------------------------------------------------------
-    // Location chip - display-only. Distance-to-property and any
-    // genuineness verdict are computed server-side; this NEVER shows one.
-    // -------------------------------------------------------------------
-
     private fun setupLocationChip() {
         val fix = locationTracker.getBestFix()
         txtLocationChip.text = when {
@@ -212,11 +206,6 @@ class PaymentFailureBottomSheet(
         return accuracyMeters.toInt().toString()
     }
 
-    // -------------------------------------------------------------------
-    // Evidence section - capability-gated, optional, passive. A denial can
-    // be submitted with nothing attached.
-    // -------------------------------------------------------------------
-
     private fun setupEvidenceSection() {
         val anyEvidenceAvailable = capabilities.hasCamera || capabilities.hasMic
         evidenceSection.visibility = if (anyEvidenceAvailable) View.VISIBLE else View.GONE
@@ -224,10 +213,6 @@ class PaymentFailureBottomSheet(
         chipAddPhoto.visibility = if (capabilities.hasCamera) View.VISIBLE else View.GONE
         chipVoiceNote.visibility = if (capabilities.hasMic) View.VISIBLE else View.GONE
 
-        // Only label the section when there's an actual choice between two
-        // options - a single bare chip (e.g. photo-only on a mic-less A910)
-        // stays quiet and minimal, per spec, so a stripped device doesn't
-        // visibly announce a missing feature.
         val hasMultipleOptions = capabilities.hasCamera && capabilities.hasMic
         txtEvidenceHeading.visibility = if (hasMultipleOptions) View.VISIBLE else View.GONE
 
