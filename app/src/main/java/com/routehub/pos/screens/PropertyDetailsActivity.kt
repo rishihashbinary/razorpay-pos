@@ -26,6 +26,9 @@ import com.routehub.pos.clients.SessionManager
 import com.routehub.pos.helpers.DateHelper
 import com.routehub.pos.helpers.LocationHelper
 import com.routehub.pos.evidence.EvidenceLocationTracker
+import com.routehub.pos.evidence.CapabilityProbe
+import com.routehub.pos.evidence.DenialEvidenceQueue
+import com.routehub.pos.evidence.DenialEvidenceUploadScheduler
 import com.routehub.pos.helpers.PlayHelper
 import com.routehub.pos.helpers.ReceiptPrintHelper
 import com.routehub.pos.models.CollectionPeriod
@@ -334,7 +337,19 @@ class PropertyDetailsActivity : AppCompatActivity() {
         }
 
         btnReject.setOnClickListener {
-            val bottomSheet = PaymentFailureBottomSheet { reason, remarks ->
+            val bottomSheet = PaymentFailureBottomSheet(
+                evidenceLocationTracker,
+                CapabilityProbe.resolve(this)
+            ) { evidence ->
+
+                val reason = evidence.reasonCode
+                val remarks = evidence.remarks ?: ""
+
+                // Persist the full bundle to the offline queue right away -
+                // survives process death/reboot. Phase 7 wires up the actual
+                // upload; this just makes sure nothing is lost until then.
+                DenialEvidenceQueue.enqueue(this, evidence)
+                DenialEvidenceUploadScheduler.triggerNow(this)
 
                 MixpanelManager.track(
                     "Payment Rejected", mapOf(
