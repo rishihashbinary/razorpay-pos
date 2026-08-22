@@ -48,6 +48,8 @@ import com.routehub.pos.screens.dues.DueSelectionActivity
 import com.routehub.pos.screens.payment.PaymentFailureBottomSheet
 import com.routehub.pos.services.BillService
 import com.routehub.pos.services.PropertiesService
+import com.routehub.pos.models.Complaint
+import com.routehub.pos.services.ComplaintsService
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.Call
@@ -55,6 +57,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.util.Calendar
 import java.util.Date
+import kotlin.collections.emptyList
 
 class PropertyDetailsActivity : AppCompatActivity() {
 
@@ -69,10 +72,18 @@ class PropertyDetailsActivity : AppCompatActivity() {
     lateinit var txtMessage: TextView
     lateinit var txtFee: TextView
 
+    lateinit var complaintBanner: View
+
+    lateinit var txtComplaintInfo: TextView
+
+    lateinit var txtMoreComplaints: TextView
+
     private var lastReceiptData: ReceiptData? = null
 
     val apiService = ApiClient.retrofit.create(PropertiesService::class.java)
     val billsService = ApiClient.retrofit.create(BillService::class.java)
+
+    val complaintsService = ApiClient.retrofit.create(ComplaintsService::class.java)
 
     private val REQUEST_CODE_PAY = 10016
     private val REQUEST_CODE_PRINT_RECEIPT = 10028
@@ -183,6 +194,9 @@ class PropertyDetailsActivity : AppCompatActivity() {
         btnRejectPayment = findViewById<Button>(R.id.btnRejectPayment)
         btnReprintReceipt = findViewById<Button>(R.id.btnReprintReceipt)
         btnBack = findViewById<Button>(R.id.btnBack)
+        complaintBanner = findViewById(R.id.complaintBanner)
+        txtComplaintInfo = findViewById(R.id.txtComplaintInfo)
+        txtMoreComplaints = findViewById(R.id.txtMoreComplaints)
 
         //         Step 1: Check permission
         if (!locationHelper.hasLocationPermission()) {
@@ -251,6 +265,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
 
                         MixpanelManager.track("Property Details", property)
+                        fetchComplaints(property?._id)
                     } else {
                         val errorMessage = response.errorBody()?.string();
                         if (errorMessage!!.contains("Property not found for the provided QR code")) {
@@ -311,6 +326,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     dueLauncher.launch(intent)
                 }
             }
+            fetchComplaints(property?._id)
         }
 
 
@@ -742,6 +758,80 @@ class PropertyDetailsActivity : AppCompatActivity() {
         })
     }
 
+    private fun fetchComplaints(propertyId: String?) {
+        if (propertyId == null) {
+            hideComplaintBanner()
+            return
+        }
+
+        complaintsService.getComplaints(propertyId,"true","true").enqueue(object : Callback<ApiListResponse<Complaint>> {
+            override fun onResponse(
+                call: Call<ApiListResponse<Complaint>>,
+                response: Response<ApiListResponse<Complaint>>
+            ) {
+                if (!response.isSuccessful) {
+                    hideComplaintBanner()
+                    return
+                }
+
+                val complaints = response.body()?.data
+
+                val openComplaints = complaints
+                    ?.filter {
+                        it.complaintStatus.equals("Pending", ignoreCase = true) ||
+                                it.complaintStatus.equals("Acknowledged", ignoreCase = true)
+                    }
+                    ?.sortedByDescending { it.raisedDate ?: "" }
+
+                showComplaintBanner(openComplaints)
+            }
+
+            override fun onFailure(call: Call<ApiListResponse<Complaint>>, t: Throwable) {
+                t.printStackTrace()
+                hideComplaintBanner()
+            }
+        })
+    }
+
+    private fun showComplaintBanner(openComplaints: List<Complaint>?) {
+        if (openComplaints.isNullOrEmpty()) {
+            hideComplaintBanner()
+            return
+        }
+
+        val featured = openComplaints.first()
+        val featuredText = featured.title ?: featured.description ?: ""
+        val ageText = formatAge(featured.ageInDays)
+
+        txtComplaintInfo.text = if (ageText.isNotBlank()) {
+            "Complaint #${featured.complaintNumber ?: "-"} - $featuredText, filed $ageText"
+        } else {
+            "Complaint #${featured.complaintNumber ?: "-"} - $featuredText"
+        }
+
+        val moreCount = openComplaints.size - 1
+        if (moreCount > 0) {
+            txtMoreComplaints.text = "And $moreCount more complaints"
+            txtMoreComplaints.visibility = View.VISIBLE
+        } else {
+            txtMoreComplaints.visibility = View.GONE
+        }
+
+        complaintBanner.visibility = View.VISIBLE
+    }
+
+    private fun formatAge(ageInDays: Int?): String {
+        if (ageInDays == null) return ""
+        return when {
+            ageInDays <= 0 -> "today"
+            ageInDays == 1 -> "1 day ago"
+            else -> "$ageInDays days ago"
+        }
+    }
+
+    private fun hideComplaintBanner() {
+        complaintBanner.visibility = View.GONE
+    }
     private fun updateAmountDueUI(total: Double, count: Int) {
         txtFee.text = "₹$total"
 //        tvSubLabel.text = "$count months pending"

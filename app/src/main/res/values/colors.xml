@@ -19,4 +19,8 @@
 
     <!-- GRAY (Neutral) -->
     <color name="gray_700">#616161</color>
+
+    <!-- Complaint banner -->
+    <color name="complaint_banner_background">#FDECEA</color>
+    <color name="complaint_banner_text">#5F2120</color>
 </resources>

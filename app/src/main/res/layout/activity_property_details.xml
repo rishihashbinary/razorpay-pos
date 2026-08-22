@@ -3,6 +3,7 @@
     xmlns:material="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="#E2E2E2"
     android:orientation="vertical">
 
@@ -130,6 +131,72 @@
 
 
             <!-- FEE CARD -->
+            <!-- OPEN COMPLAINT BANNER -->
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/complaintBanner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:visibility="gone"
+                material:cardBackgroundColor="@color/complaint_banner_background"
+                material:cardCornerRadius="8dp"
+                material:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="!"
+                            android:textColor="@color/danger"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:layout_marginEnd="6dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/open_complaint"
+                            android:textColor="@color/danger"
+                            android:textStyle="bold"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txtComplaintInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:textColor="@color/complaint_banner_text"
+                        android:textSize="14sp"
+                        tools:text="Complaint #ASR-00000103 - test north zone complaint, filed 38 days ago" />
+
+                    <TextView
+                        android:id="@+id/txtMoreComplaints"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="#181515"
+                        android:textSize="12sp"
+                        android:visibility="gone"
+                        tools:text="And 2 more complaints" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -137,6 +204,8 @@
                 android:layout_marginTop="12dp"
                 material:cardCornerRadius="8dp"
                 material:cardElevation="0dp">
+
+
 
                 <LinearLayout
                     android:layout_width="match_parent"

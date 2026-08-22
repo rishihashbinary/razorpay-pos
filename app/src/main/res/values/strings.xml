@@ -54,29 +54,5 @@
     <string name="cancel">Cancel</string>
     <string name="logout">Logout</string>
     <string name="logout_confirmation_message">Are you sure you want to logout?</string>
-    <string name="evidence_optional" translatable="false">EVIDENCE (OPTIONAL)</string>
-    <string name="add_photo" translatable="false">Add photo</string>
-    <string name="voice_note" translatable="false">Voice note</string>
-    <string name="photo_added" translatable="false">Photo added</string>
-    <string name="audio_added_format" translatable="false">Audio added (%1$s)</string>
-    <string name="voice_consent_title" translatable="false">Voice note consent</string>
-    <string name="voice_consent_message" translatable="false">This will record a short voice note as part of this rejection. Does the customer consent to being recorded?</string>
-    <string name="consent_and_record" translatable="false">Consent &amp; record</string>
-    <string name="decline" translatable="false">Decline</string>
-    <string name="remove_photo_confirm" translatable="false">Remove this photo?</string>
-    <string name="remove_audio_confirm" translatable="false">Remove this voice note?</string>
-    <string name="remove" translatable="false">Remove</string>
-    <string name="location_captured_format" translatable="false">Location captured · ±%1$sm</string>
-    <string name="location_acquiring" translatable="false">Acquiring location…</string>
-    <string name="location_unavailable" translatable="false">Location unavailable</string>
-    <string name="camera_permission_required" translatable="false">Camera permission is needed to attach a photo.</string>
-    <string name="no_camera_available" translatable="false">No camera available on this device.</string>
-    <string name="camera_init_failed" translatable="false">Could not start the camera. Please try again.</string>
-    <string name="photo_capture_failed" translatable="false">Photo capture failed. Please try again.</string>
-    <string name="photo_processing_failed" translatable="false">Could not process the photo. Please try again.</string>
-    <string name="photo_framing_hint" translatable="false">Frame the counter, goods, or location — not the customer</string>
-    <string name="mic_permission_required" translatable="false">Microphone permission is needed to record a voice note.</string>
-    <string name="audio_capture_failed" translatable="false">Voice note recording failed. Please try again.</string>
-    <string name="recording_in_progress" translatable="false">Recording…</string>
-    <string name="recording_timer_format" translatable="false">%1$s / %2$s</string>
+    <string name="open_complaint" translatable="false">Open complaint</string>
 </resources>
