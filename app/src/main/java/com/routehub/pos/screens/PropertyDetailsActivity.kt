@@ -570,7 +570,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     amount = property?.rate,
                     usageType = property?.propertyUsageTypeId?.typeName,
                     customerName = property?.name ?: property?.ownerName ?: property?.address1,
-                    customerPhone = property?.mobileNo,
+                    customerPhone = maskPhone(property?.mobileNo),
                     receiptDate = DateHelper.getReadableDate(receipt?.receiptDate)
                 )
                 lastReceiptData = receiptData
@@ -643,6 +643,20 @@ class PropertyDetailsActivity : AppCompatActivity() {
     fun navigateToHome() {
         val intent = Intent(this, HomeActivity::class.java)
         startActivity(intent)
+    }
+
+    private fun maskPhone(
+        raw: String?,
+        visibleDigits: Int = 4,
+        maskChar: Char = 'X'
+    ): String {
+        if (raw.isNullOrBlank()) return ""
+        val digits = raw.filter { it.isDigit() }
+        if (digits.length <= visibleDigits) {
+            return maskChar.toString().repeat(digits.length)
+        }
+        val masked = maskChar.toString().repeat(digits.length - visibleDigits)
+        return masked + digits.takeLast(visibleDigits)
     }
 
     private fun showPostPaymentActions() {
