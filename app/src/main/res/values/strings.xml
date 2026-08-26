@@ -79,4 +79,8 @@
     <string name="audio_capture_failed" translatable="false">Voice note recording failed. Please try again.</string>
     <string name="recording_in_progress" translatable="false">Recording…</string>
     <string name="recording_timer_format" translatable="false">%1$s / %2$s</string>
+    <string name="outside_assigned_ward_title" translatable="false">Outside your assigned ward</string>
+    <string name="outside_assigned_ward_message" translatable="false">This property is outside your assigned ward (%1$s).</string>
+    <string name="outside_assigned_ward_message_generic" translatable="false">This property is outside your assigned ward.</string>
+    <string name="ok" translatable="false">OK</string>
 </resources>

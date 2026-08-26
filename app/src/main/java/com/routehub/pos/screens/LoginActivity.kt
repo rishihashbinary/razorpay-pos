@@ -15,6 +15,8 @@ import com.routehub.pos.clients.ApiClient
 import com.routehub.pos.clients.SessionManager
 import com.routehub.pos.models.LoginRequest
 import com.routehub.pos.models.responses.LoginResponse
+import com.routehub.pos.clients.EmployeeScope
+import com.routehub.pos.services.EmployeeService
 import com.routehub.pos.persistence.MasterDataPrefs
 import com.routehub.pos.services.AuthService
 import com.routehub.pos.services.PropertiesService
@@ -39,6 +41,7 @@ class LoginActivity : AppCompatActivity() {
     private val wardService = ApiClient.retrofit.create(WardService::class.java)
 
     private val configService = ApiClient.retrofit.create(ConfigService::class.java)
+    private val employeeService = ApiClient.retrofit.create(EmployeeService::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +96,7 @@ class LoginActivity : AppCompatActivity() {
                         SessionManager.setUserId(userId)
                         MixpanelManager.track("Login Success", request)
                         FeatureFlagManager.refresh(configService)
+                        employeeId?.let { EmployeeScope.refresh(employeeService, it) }
                         CapabilityProbe.resolve(this@LoginActivity)
                         lifecycleScope.launch {
                             try {
