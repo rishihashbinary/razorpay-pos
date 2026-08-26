@@ -16,6 +16,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.eze.api.EzeAPI
 import com.google.gson.Gson
+import androidx.appcompat.app.AlertDialog
+import com.routehub.pos.clients.EmployeeScope
 import com.routehub.pos.PrintCallback
 import com.routehub.pos.R
 import com.routehub.pos.analytics.AnalyticsTracker
@@ -224,6 +226,10 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
 
                         property = response.body()?.data
+                        if (!EmployeeScope.isInScope(property)) {
+                            showOutOfScopeAndExit()
+                            return
+                        }
 
                         property?.let {
                             txtName.text = it.name ?: it.address1
@@ -277,6 +283,10 @@ class PropertyDetailsActivity : AppCompatActivity() {
             })
         } else {
             property = Gson().fromJson(propertyDetails, Property::class.java)
+            if (!EmployeeScope.isInScope(property)) {
+                showOutOfScopeAndExit()
+                return
+            }
 
             property?.let {
                 txtName.text = it.name ?: it.address1
@@ -643,6 +653,21 @@ class PropertyDetailsActivity : AppCompatActivity() {
     fun navigateToHome() {
         val intent = Intent(this, HomeActivity::class.java)
         startActivity(intent)
+    }
+    private fun showOutOfScopeAndExit() {
+        val label = EmployeeScope.getAssignedLabel()
+        val message = if (label.isNotBlank()) {
+            getString(R.string.outside_assigned_ward_message, label)
+        } else {
+            getString(R.string.outside_assigned_ward_message_generic)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.outside_assigned_ward_title))
+            .setMessage(message)
+            .setPositiveButton(getString(R.string.ok)) { _, _ -> navigateToHome() }
+            .setCancelable(false)
+            .show()
     }
 
     private fun showPostPaymentActions() {
