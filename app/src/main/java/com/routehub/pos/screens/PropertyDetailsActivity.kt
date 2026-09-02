@@ -600,7 +600,9 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     paymentMode = txn?.paymentMode,
                     reference1 = references?.reference1,
                     status = "Success",
-                    amount = property?.rate,
+                    amount = FeeCalculator.minorToRupeesFloat(
+                        appliedAdjustment?.finalMinor ?: originalAmountMinor
+                    ),
                     usageType = property?.propertyUsageTypeId?.typeName,
                     customerName = property?.name ?: property?.ownerName ?: property?.address1,
                     customerPhone = property?.mobileNo,
