@@ -11,6 +11,13 @@ data class DirectCollection(
     val location: PropertyLocation?,
     val paymentStatus: String = "pending",
     val denialReason: String? = null,
+    val clientTransactionId: String? = null,
+    val originalAmountMinor: Long? = null,
+    val currency: String? = null,
+    val exponent: Int? = null,
+    val adjustmentType: String? = null,
+    val adjustmentValue: String? = null,
+    val finalAmountMinor: Long? = null,
 )
 
 data class CollectionPeriod(

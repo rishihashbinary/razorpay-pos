@@ -79,4 +79,16 @@
     <string name="audio_capture_failed" translatable="false">Voice note recording failed. Please try again.</string>
     <string name="recording_in_progress" translatable="false">Recording…</string>
     <string name="recording_timer_format" translatable="false">%1$s / %2$s</string>
+    <string name="edit_amount" translatable="false">✎ Edit amount</string>
+    <string name="adjust_amount" translatable="false">Adjust amount</string>
+    <string name="apply" translatable="false">Apply</string>
+    <string name="fee_mode_percent" translatable="false">% off</string>
+    <string name="fee_mode_absolute" translatable="false">₹ off</string>
+    <string name="fee_mode_override" translatable="false">New ₹</string>
+    <string name="fee_hint_percent" translatable="false">Enter discount %</string>
+    <string name="fee_hint_absolute" translatable="false">Enter ₹ to reduce</string>
+    <string name="fee_hint_override" translatable="false">Enter new total ₹</string>
+    <string name="fee_original" translatable="false">Original</string>
+    <string name="fee_discount" translatable="false">Discount</string>
+    <string name="fee_to_collect" translatable="false">To collect</string>
 </resources>

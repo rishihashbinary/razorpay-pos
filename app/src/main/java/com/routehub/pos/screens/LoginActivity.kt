@@ -45,6 +45,7 @@ class LoginActivity : AppCompatActivity() {
 
         // Router/splash check: a valid persisted session skips Login entirely.
         if (Session.isLoggedIn()) {
+            FeatureFlagManager.refresh(configService)
             navigateToHomeAndFinish()
             return
         }
