@@ -55,6 +55,12 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.util.Calendar
 import java.util.Date
+import android.graphics.Paint
+import androidx.core.view.isVisible
+import com.routehub.pos.fee.AdjustmentType
+import com.routehub.pos.fee.AppliedAdjustment
+import com.routehub.pos.fee.FeeAdjustmentBottomSheet
+import com.routehub.pos.fee.FeeCalculator
 
 class PropertyDetailsActivity : AppCompatActivity() {
 
@@ -62,6 +68,13 @@ class PropertyDetailsActivity : AppCompatActivity() {
     var hasLocation: Boolean = false;
     private lateinit var locationHelper: LocationHelper
     private lateinit var evidenceLocationTracker: EvidenceLocationTracker
+    private lateinit var txtEditAmount: TextView
+    private lateinit var txtOriginalAmount: TextView
+    private lateinit var chipAdjustment: TextView
+
+    private var originalAmountMinor: Long = 0L
+    private var appliedAdjustment: AppliedAdjustment? = null
+    private var clientTransactionId: String? = null
     lateinit var btnPayment: Button
     lateinit var btnRejectPayment: Button
     lateinit var btnReprintReceipt: Button
@@ -183,6 +196,11 @@ class PropertyDetailsActivity : AppCompatActivity() {
         btnRejectPayment = findViewById<Button>(R.id.btnRejectPayment)
         btnReprintReceipt = findViewById<Button>(R.id.btnReprintReceipt)
         btnBack = findViewById<Button>(R.id.btnBack)
+        txtEditAmount = findViewById(R.id.txtEditAmount)
+        txtOriginalAmount = findViewById(R.id.txtOriginalAmount)
+        chipAdjustment = findViewById(R.id.chipAdjustment)
+        txtOriginalAmount.paintFlags = txtOriginalAmount.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+
 
         //         Step 1: Check permission
         if (!locationHelper.hasLocationPermission()) {
@@ -242,6 +260,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
                         txtUsage.text = property?.propertyUsageTypeId?.typeName
 
                         txtFee.text = "₹" + property?.rate.toString()
+                        setOriginalFee(property?.rate)
 
                         if (property?.rate === null) {
                             btnPayment.isEnabled = false
@@ -295,6 +314,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
             txtUsage.text = property?.propertyUsageTypeId?.typeName
 
             txtFee.text = "₹" + property?.rate.toString()
+            setOriginalFee(property?.rate)
 
             if (property?.rate === null) {
                 btnPayment.isEnabled = false
@@ -320,12 +340,15 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
         btnPayment.setOnClickListener {
             MixpanelManager.track("Payment Button Clicked")
-            startPayment(property?.rate, "ASRO-${System.currentTimeMillis()}")
+            val orderId = "ASRO-${System.currentTimeMillis()}"
+            clientTransactionId = orderId
 
-//            PaymentLauncher.startPayment(
-//                this,
-//                1
-//            )
+            val effectiveMinor = appliedAdjustment?.finalMinor ?: originalAmountMinor
+            val amountToCharge =
+                if (effectiveMinor > 0L) FeeCalculator.minorToRupeesFloat(effectiveMinor)
+                else property?.rate
+
+            startPayment(amountToCharge, orderId)
         }
 
         val btnReject = findViewById<Button>(R.id.btnRejectPayment)
@@ -515,11 +538,13 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     val calendar = Calendar.getInstance()
                     val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-based
                     val year = calendar.get(Calendar.YEAR)
+                    val applied = appliedAdjustment
+                    val finalMinor = applied?.finalMinor ?: originalAmountMinor
 
                     val request = DirectCollection(
                         propertyId = property?._id.toString(),
-                        amountPaid = property?.rate,
-                        billAmount = property?.rate,
+                        amountPaid = FeeCalculator.minorToRupeesFloat(finalMinor),
+                        billAmount = FeeCalculator.minorToRupeesFloat(originalAmountMinor),
                         paymentType = txn?.paymentMode?.toLowerCase(),
                         paymentStatus = "success",
                         collectorId = SessionManager.getUserId(),
@@ -531,7 +556,15 @@ class PropertyDetailsActivity : AppCompatActivity() {
                         location = PropertyLocation(
                             latitude = lat,
                             longitude = lng
-                        )
+                        ),
+
+                        clientTransactionId = clientTransactionId ?: references?.reference1,
+                        originalAmountMinor = originalAmountMinor,
+                        currency = "INR",
+                        exponent = 2,
+                        adjustmentType = (applied?.type ?: AdjustmentType.NONE).name,
+                        adjustmentValue = applied?.rawValue,
+                        finalAmountMinor = finalMinor
                     )
 
                     billsService.createDirectCollection(request)
@@ -567,7 +600,9 @@ class PropertyDetailsActivity : AppCompatActivity() {
                     paymentMode = txn?.paymentMode,
                     reference1 = references?.reference1,
                     status = "Success",
-                    amount = property?.rate,
+                    amount = FeeCalculator.minorToRupeesFloat(
+                        appliedAdjustment?.finalMinor ?: originalAmountMinor
+                    ),
                     usageType = property?.propertyUsageTypeId?.typeName,
                     customerName = property?.name ?: property?.ownerName ?: property?.address1,
                     customerPhone = property?.mobileNo,
@@ -640,6 +675,69 @@ class PropertyDetailsActivity : AppCompatActivity() {
         }
     }
 
+    private fun setOriginalFeeMinor(minor: Long) {
+        appliedAdjustment = null
+        if (minor <= 0L) {
+            originalAmountMinor = 0L
+            txtEditAmount.isVisible = false
+            txtOriginalAmount.isVisible = false
+            chipAdjustment.isVisible = false
+            return
+        }
+        originalAmountMinor = minor
+
+        txtEditAmount.isVisible = FeatureFlagManager.allowFeeUpdate
+        txtEditAmount.setOnClickListener { openFeeAdjustmentSheet() }
+
+        renderFee()
+    }
+
+    private fun setOriginalFee(rate: Float?) {
+        setOriginalFeeMinor(
+            if (rate == null || rate <= 0f) 0L else FeeCalculator.rupeesToMinor(rate)
+        )
+    }
+
+    private fun openFeeAdjustmentSheet() {
+        if (originalAmountMinor <= 0L) return
+        FeeAdjustmentBottomSheet(originalAmountMinor) { applied ->
+            appliedAdjustment = applied
+            renderFee()
+        }.show(supportFragmentManager, "FeeAdjustment")
+    }
+
+    private fun renderFee() {
+        val applied = appliedAdjustment
+        if (applied == null) {
+            txtFee.text = FeeCalculator.formatMinor(originalAmountMinor)
+            txtOriginalAmount.isVisible = false
+            chipAdjustment.isVisible = false
+            return
+        }
+
+        txtFee.text = FeeCalculator.formatMinor(applied.finalMinor)
+
+        txtOriginalAmount.text = FeeCalculator.formatMinor(originalAmountMinor)
+        txtOriginalAmount.isVisible = true
+
+        chipAdjustment.text = adjustmentChipLabel(applied)
+        chipAdjustment.isVisible = true
+        chipAdjustment.setOnClickListener {
+            appliedAdjustment = null
+            renderFee()
+        }
+    }
+
+    private fun adjustmentChipLabel(a: AppliedAdjustment): String {
+        val head = when (a.type) {
+            AdjustmentType.PERCENTAGE -> "${a.rawValue}% off"
+            AdjustmentType.ABSOLUTE   -> "₹${a.rawValue} off"
+            AdjustmentType.OVERRIDE   -> "New total"
+            AdjustmentType.NONE       -> "No change"
+        }
+        return "$head · − ${FeeCalculator.formatMinor(a.discountMinor)}  ✕"
+    }
+
     fun navigateToHome() {
         val intent = Intent(this, HomeActivity::class.java)
         startActivity(intent)
@@ -699,7 +797,7 @@ class PropertyDetailsActivity : AppCompatActivity() {
 
             Log.d("PropertyDetailsActivity", "Selected Dues: $total")
 
-            txtFee.text = "₹$total"
+            setOriginalFeeMinor(FeeCalculator.rupeesToMinor(total))
         }
     }
 
@@ -743,7 +841,9 @@ class PropertyDetailsActivity : AppCompatActivity() {
     }
 
     private fun updateAmountDueUI(total: Double, count: Int) {
-        txtFee.text = "₹$total"
+        val minor = FeeCalculator.rupeesToMinor(total)
+        if (minor <= 0L) return
+        setOriginalFeeMinor(minor)
 //        tvSubLabel.text = "$count months pending"
     }
 

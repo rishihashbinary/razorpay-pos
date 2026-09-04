@@ -161,6 +161,44 @@
                         android:textSize="36sp"
                         android:textStyle="bold" />
 
+                    <!-- Original amount, struck-through — shown only after an adjustment -->
+                    <TextView
+                        android:id="@+id/txtOriginalAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#999"
+                        android:textSize="16sp"
+                        android:visibility="gone" />
+
+                    <!-- Adjustment chip — tap to revert to original -->
+                    <TextView
+                        android:id="@+id/chipAdjustment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_chip_neutral"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:textColor="#424242"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+
+                    <!-- Edit affordance — gated by ucc-allow-fee-update -->
+                    <TextView
+                        android:id="@+id/txtEditAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:text="@string/edit_amount"
+                        android:textColor="#1E88E5"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
