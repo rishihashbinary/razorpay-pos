@@ -16,12 +16,11 @@ object FeatureFlagManager {
     private const val KEY_ALLOW_RECEIPT_REPRINT = "allow-receipt-reprint"
     private const val KEY_ALLOW_BILL_REJECTION = "allow-bill-rejection"
     private const val KEY_ALLOW_FEE_UPDATE = "ucc-allow-fee-update"
-    private const val FORCE_ALLOW_FEE_UPDATE = true
+
 
     val allowReceiptReprint: Boolean get() = cached(KEY_ALLOW_RECEIPT_REPRINT)
     val allowBillRejection: Boolean get() = cached(KEY_ALLOW_BILL_REJECTION)
-    val allowFeeUpdate: Boolean
-        get() = FORCE_ALLOW_FEE_UPDATE || cached(KEY_ALLOW_FEE_UPDATE)
+    val allowFeeUpdate: Boolean get() = cached(KEY_ALLOW_FEE_UPDATE)
 
     fun refresh(configService: ConfigService) {
         fetchFlag(configService, KEY_ALLOW_RECEIPT_REPRINT)
